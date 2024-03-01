@@ -97,7 +97,7 @@
         app:layout_constraintBottom_toBottomOf="@id/tv_date"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <com.example.bicyclebluetoothapp.Canvas
+    <com.example.bicyclebluetoothapp.LogGraph
         android:id="@+id/graph_log"
         android:layout_width="380dp"
         android:layout_height="250dp"

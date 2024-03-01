@@ -6,8 +6,8 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-public class Canvas extends View {
-    public Canvas(Context context, @Nullable AttributeSet attrs) {
+public class BatteryGraph extends View {
+    public BatteryGraph(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 

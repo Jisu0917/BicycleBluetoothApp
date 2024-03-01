@@ -12,7 +12,8 @@ public class ConsumptionActivity extends AppCompatActivity {
 
     TextView tv_title, tv_w, tv_ready, tv_speed, tv_KPH, tv_percent, tv_soc, tv_odo, tv_distance;
     ImageButton btn_menu;
-    Canvas graph_speed, graph_battery;
+    SpeedGraph graph_speed;
+    BatteryGraph graph_battery;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,8 +32,8 @@ public class ConsumptionActivity extends AppCompatActivity {
 
         btn_menu = (ImageButton) findViewById(R.id.btn_menu);
 
-        graph_speed = (Canvas) findViewById(R.id.graph_speed);
-        graph_battery = (Canvas) findViewById(R.id.graph_battery);
+        graph_speed = (SpeedGraph) findViewById(R.id.graph_speed);
+        graph_battery = (BatteryGraph) findViewById(R.id.graph_battery);
 
         btn_menu.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -11,7 +11,7 @@ public class TripLogActivity extends AppCompatActivity {
 
     ImageButton imgbtn_back, btn_share;
     TextView tv_back, tv_untitled, tv_date, tv_used_wh, tv_dist_km, tv_avrpwr_w;
-    Canvas graph_log;
+    LogGraph graph_log;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,7 +28,7 @@ public class TripLogActivity extends AppCompatActivity {
         tv_dist_km = (TextView) findViewById(R.id.tv_dist_km);
         tv_avrpwr_w = (TextView) findViewById(R.id.tv_avrpwr_w);
 
-        graph_log = (Canvas) findViewById(R.id.graph_log);
+        graph_log = (LogGraph) findViewById(R.id.graph_log);
 
 
         imgbtn_back.setOnClickListener(new View.OnClickListener() {
