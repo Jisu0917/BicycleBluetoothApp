@@ -1,4 +1,4 @@
-package com.example.bicyclebluetoothapp;
+package com.activerecycle.tripgauge;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -132,13 +132,30 @@ public class ConsumptionActivity extends AppCompatActivity {
 
 
 
-
-
         // 배터리
         soc = 75;
 
         graph_battery.soc = soc;
+        // 받아오는 배터리 값 달라질 때마다 graph_battery.invalidate();
         tv_percent.setText(soc+"%");
+
+
+        // ODO
+        tv_odo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (tv_odo.getText().equals("ODO")) {
+                    tv_odo.setText("TRIPA");
+                } else if (tv_odo.getText().equals("TRIPA")) {
+                    tv_odo.setText("TRIPB");
+                } else if (tv_odo.getText().equals("TRIPB")) {
+                    tv_odo.setText("ODO");
+                }
+            }
+        });
+
+
+
 
 
 

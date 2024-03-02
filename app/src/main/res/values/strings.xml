@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BicycleBluetoothApp</string>
+    <string name="app_name">RE:CYCLE-Trip gauge</string>
     <string name="consumption">Consumption</string>
     <string name="connection">Connection</string>
     <string name="settings">Settings</string>

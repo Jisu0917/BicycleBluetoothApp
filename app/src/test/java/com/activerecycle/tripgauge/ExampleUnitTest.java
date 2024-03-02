@@ -1,4 +1,4 @@
-package com.example.bicyclebluetoothapp;
+package com.activerecycle.tripgauge;
 
 import org.junit.Test;
 

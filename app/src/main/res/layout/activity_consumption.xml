@@ -77,7 +77,7 @@
         />
 
 
-    <com.example.bicyclebluetoothapp.SpeedGraph
+    <com.activerecycle.tripgauge.SpeedGraph
         android:id="@+id/graph_speed"
         android:layout_width="wrap_content"
         android:layout_height="320dp"
@@ -154,7 +154,7 @@
         app:layout_constraintHorizontal_bias="1"
         />
 
-    <com.example.bicyclebluetoothapp.BatteryGraph
+    <com.activerecycle.tripgauge.BatteryGraph
         android:id="@+id/graph_battery"
         android:layout_width="wrap_content"
         android:layout_height="80dp"
@@ -166,7 +166,7 @@
 
     <TextView
         android:id="@+id/tv_odo"
-        android:layout_width="110dp"
+        android:layout_width="140dp"
         android:layout_height="wrap_content"
         android:background="@drawable/stroke_rounding_white"
         android:paddingStart="20dp"

@@ -1,4 +1,4 @@
-package com.example.bicyclebluetoothapp;
+package com.activerecycle.tripgauge;
 
 import android.content.Context;
 import android.graphics.Color;
