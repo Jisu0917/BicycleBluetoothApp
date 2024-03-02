@@ -19,6 +19,9 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class ConsumptionActivity extends AppCompatActivity {
 
     // 앱에서 디바이스에게 주는 데이터
@@ -37,10 +40,15 @@ public class ConsumptionActivity extends AppCompatActivity {
     SpeedGraph graph_speed;
     BatteryGraph graph_battery;
 
+    // DBHelper
+    DBHelper dbHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_consumption);
+
+        dbHelper = new DBHelper(ConsumptionActivity.this, 1);
 
         //tv_title = (TextView) findViewById(R.id.tv_title);
         tv_w = (TextView) findViewById(R.id.tv_w);
@@ -91,7 +99,7 @@ public class ConsumptionActivity extends AppCompatActivity {
             @Override
             public void onLocationChanged(@NonNull Location location) {
                 String provider = location.getProvider();  // 위치 정보
-                System.out.println("위치 정보 : " + provider + ", 속도 : " + location.getSpeed());
+                //System.out.println("위치 정보 : " + provider + ", 속도 : " + location.getSpeed());
                 speed = (int) location.getSpeed();
 
                 // 주행 속도 화면에 반영
@@ -156,6 +164,38 @@ public class ConsumptionActivity extends AppCompatActivity {
 
 
 
+
+
+        // 로그 db에 기록
+        final long[] mNow = new long[1];
+        final Date[] mDate = new Date[1];
+        SimpleDateFormat mFormat = new SimpleDateFormat("yyyy.MM.dd hh:mm:ss");
+
+        // 5초마다 실행
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    // 수행할 작업
+                    mNow[0] = System.currentTimeMillis();
+                    mDate[0] = new Date(mNow[0]);
+                    String nowTime = mFormat.format(mDate[0]);
+
+                    long tripLogCount = dbHelper.getProfilesCount("TripLog");
+
+                    dbHelper.insert_TripLog((int) tripLogCount, nowTime, volt, amp);
+
+                    String allLog = dbHelper.getLog();
+                    System.out.println(allLog);
+
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
 
 
 
