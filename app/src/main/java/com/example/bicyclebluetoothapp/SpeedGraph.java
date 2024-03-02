@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -14,12 +15,23 @@ public class SpeedGraph extends View {
         super(context, attrs);
     }
 
-    int sweepAngle = 190;
-    final int maxAngle = 240;
+    int speed;
+    int sweepAngle;
+    int maxAngle;
 
     @Override
     protected void onDraw(android.graphics.Canvas canvas) {
         super.onDraw(canvas);
+
+        sweepAngle = 260 * speed / 30;
+        maxAngle = 260 * 25 / 30;
+
+
+        //핸드폰 화면크기 가져오기
+        DisplayMetrics metrics = new DisplayMetrics();
+        getDisplay().getMetrics(metrics);
+        int screenWidth = metrics.widthPixels;
+        int screenHeight = metrics.heightPixels;
 
         setBackgroundColor(Color.BLACK);
 
@@ -30,7 +42,8 @@ public class SpeedGraph extends View {
 
         RectF rect = new RectF();
         rect = new RectF();
-        rect.set(50, 30, 850, 780);
+        int full_length = screenWidth * 75 / 100;
+        rect.set(screenWidth/2 - 400, 30, screenWidth/2 + 400, 780);
         canvas.drawArc(rect, 140, 260, false, pnt_gray);
 
         if (sweepAngle < maxAngle) {
