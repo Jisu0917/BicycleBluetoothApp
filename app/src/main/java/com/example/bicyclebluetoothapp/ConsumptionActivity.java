@@ -21,8 +21,8 @@ import android.widget.TextView;
 
 public class ConsumptionActivity extends AppCompatActivity {
 
-    int speed = 27;
-    int battery_percent = 35;
+    int speed = 0;
+    int battery_percent = 0;
 
     TextView tv_title, tv_w, tv_ready, tv_speed, tv_KPH, tv_percent, tv_soc, tv_odo, tv_distance;
     ImageButton btn_menu;
@@ -107,6 +107,8 @@ public class ConsumptionActivity extends AppCompatActivity {
 
 
         // 배터리
+        battery_percent = 75;
+
         graph_battery.percent = battery_percent;
         tv_percent.setText(battery_percent+"%");
 

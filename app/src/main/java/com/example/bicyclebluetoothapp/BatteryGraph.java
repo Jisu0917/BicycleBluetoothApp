@@ -15,7 +15,7 @@ import androidx.annotation.Nullable;
 
 public class BatteryGraph extends View {
 
-    int percent = 75;
+    int percent;
 
     public BatteryGraph(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -43,13 +43,13 @@ public class BatteryGraph extends View {
         } else {
             paint.setShader(new LinearGradient(40,0, length/2 +200,0, Color.BLACK, Color.rgb(255, 20, 20), Shader.TileMode.CLAMP));
         }
-        canvas.drawRect(screenWidth/2-500, 30, screenWidth/2-500 + length, 170, paint);
+        canvas.drawRect(screenWidth * 5 / 100, 30, screenWidth * 5 / 100 + length, 170, paint);
 
         Paint paint2 = new Paint(); // 페인트 객체 생성
         paint2.setColor(Color.WHITE);
         paint2.setStrokeWidth(4f);
         paint2.setStyle(Paint.Style.STROKE);
-        canvas.drawRect(screenWidth/2-500, 30, screenWidth/2-500 + full_length, 170, paint2);
+        canvas.drawRect(screenWidth * 5 / 100, 30, screenWidth * 5 / 100 + full_length, 170, paint2);
 
 
     }
