@@ -4,6 +4,6 @@
         <attr name="speed" format="integer" />
     </declare-styleable>
     <declare-styleable name="BatteryGraph">
-        <attr name="percent" format="integer" />
+        <attr name="soc" format="integer" />
     </declare-styleable>
 </resources>

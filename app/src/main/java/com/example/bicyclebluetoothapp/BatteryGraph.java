@@ -15,7 +15,7 @@ import androidx.annotation.Nullable;
 
 public class BatteryGraph extends View {
 
-    int percent;
+    int soc;
 
     public BatteryGraph(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -35,10 +35,10 @@ public class BatteryGraph extends View {
 
         // 막대 길이 계산
         int full_length = screenWidth * 90 / 100;
-        int length = percent * full_length / 100;
+        int length = soc * full_length / 100;
 
         Paint paint = new Paint(); // 페인트 객체 생성
-        if (percent > 10) {
+        if (soc > 10) {
             paint.setShader(new LinearGradient(100,0, length/2 +200,0, Color.BLACK, Color.rgb(146, 208, 80), Shader.TileMode.CLAMP));
         } else {
             paint.setShader(new LinearGradient(40,0, length/2 +200,0, Color.BLACK, Color.rgb(255, 20, 20), Shader.TileMode.CLAMP));

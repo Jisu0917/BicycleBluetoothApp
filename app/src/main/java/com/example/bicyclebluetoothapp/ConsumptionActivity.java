@@ -21,8 +21,16 @@ import android.widget.TextView;
 
 public class ConsumptionActivity extends AppCompatActivity {
 
+    // 앱에서 디바이스에게 주는 데이터
     int speed = 0;
-    int battery_percent = 0;
+    boolean btconnect = true;
+
+    // 디바이스로부터 받는 데이터
+    int volt = 25; // 전압값 (0~25)
+    int amp = 30; // 전류값 (0~30)
+    int soc = 0;  // 배터리 잔량
+
+    // w = volt * amp;
 
     TextView tv_title, tv_w, tv_ready, tv_speed, tv_KPH, tv_percent, tv_soc, tv_odo, tv_distance;
     ImageButton btn_menu;
@@ -34,13 +42,13 @@ public class ConsumptionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_consumption);
 
-        tv_title = (TextView) findViewById(R.id.tv_title);
+        //tv_title = (TextView) findViewById(R.id.tv_title);
         tv_w = (TextView) findViewById(R.id.tv_w);
         tv_ready = (TextView) findViewById(R.id.tv_ready);
         tv_speed = (TextView) findViewById(R.id.tv_speed);
         tv_KPH = (TextView) findViewById(R.id.tv_KPH);
         tv_percent = (TextView) findViewById(R.id.tv_percent);
-        tv_soc = (TextView) findViewById(R.id.tv_soc);
+        //tv_soc = (TextView) findViewById(R.id.tv_soc);
         tv_odo = (TextView) findViewById(R.id.tv_odo);
         tv_distance = (TextView) findViewById(R.id.tv_distance);
 
@@ -56,6 +64,26 @@ public class ConsumptionActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        // Connect 여부 표시
+        if (btconnect) {
+            // 블루투스 연결된 상태이면
+            tv_ready.setText("Ready");
+            tv_ready.setTextColor(Color.rgb(146, 208, 80));  //green
+
+        } else {
+            // 블루투스 연결 안 된 상태이면
+            tv_ready.setText("Connect");
+            tv_ready.setTextColor(Color.rgb(255, 0, 0));  //red
+
+            graph_speed.speed = 99;
+            graph_speed.invalidate();
+
+            return;  // 아래 내용 무시
+        }
+
+        // W 표시
+        tv_w.setText(volt * amp + "W");
 
         // gps 주행 속도 측정
         final LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -107,10 +135,10 @@ public class ConsumptionActivity extends AppCompatActivity {
 
 
         // 배터리
-        battery_percent = 75;
+        soc = 75;
 
-        graph_battery.percent = battery_percent;
-        tv_percent.setText(battery_percent+"%");
+        graph_battery.soc = soc;
+        tv_percent.setText(soc+"%");
 
 
 
