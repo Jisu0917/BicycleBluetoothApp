@@ -20,6 +20,8 @@ public class TripLogActivity extends AppCompatActivity {
     DBHelper dbHelper;
     static Map dataMap = new HashMap();
 
+    int TABLE_ID = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,7 +56,8 @@ public class TripLogActivity extends AppCompatActivity {
             }
         });
 
-        graph_log.map = dbHelper.getTripLogW(dataMap, 4);
-        graph_log.maxW = dbHelper.getMaxW();
+        TABLE_ID = 1;
+        graph_log.map = dbHelper.getTripLogW(dataMap, TABLE_ID);
+        graph_log.maxW = dbHelper.getMaxW(TABLE_ID);
     }
 }

@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 public class DBHelper extends SQLiteOpenHelper {
@@ -101,20 +102,18 @@ public class DBHelper extends SQLiteOpenHelper {
         return count;
     }
 
-    public int getMaxW() {
-        SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT MAX(w) FROM TripLog", null);
-        cursor.moveToFirst();
-        return cursor.getInt(0);
-    }
+//    public int getMaxW() {
+//        SQLiteDatabase db = getReadableDatabase();
+//        Cursor cursor = db.rawQuery("SELECT MAX(w) FROM TripLog", null);
+//        cursor.moveToFirst();
+//        return cursor.getInt(0);
+//    }
 
-    public int getUsedW() {
-        SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM TripLog", null);
-        cursor.moveToFirst();
-        int first = cursor.getInt(4);
-        cursor.moveToLast();
-        int last = cursor.getInt(4);
+    public int getUsedW(int tableId) {
+        Map map = getTripLog(tableId);
+        ArrayList<Integer> wList = (ArrayList<Integer>) map.get("W");
+        int first = wList.get(0);
+        int last = wList.get(wList.size() - 1);
         int usedW = first - last;
         if (usedW < 0) {
             usedW = -usedW;
@@ -122,11 +121,16 @@ public class DBHelper extends SQLiteOpenHelper {
         return usedW;
     }
 
-    public int getAvgPwrW() {
-        SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT AVG(w) FROM TripLog", null);
-        cursor.moveToFirst();
-        return cursor.getInt(0);
+    public int getAvgPwrW(int tableId) {
+        Map map = getTripLog(tableId);
+        ArrayList<Integer> wList = (ArrayList<Integer>) map.get("W");
+        int sum = 0;
+
+        for (int i = 0; i < wList.size(); i++) {
+            sum += wList.get(i);
+        }
+        int avg = sum / wList.size();
+        return avg;
     }
 
     // TripSTATS Table 조회
@@ -176,6 +180,54 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         map.put("W", list);
         return map;
+    }
+
+    public Map getTripLog(int tableId) {
+
+        Map map = new HashMap();
+
+        // 읽기가 가능하게 DB 열기
+        SQLiteDatabase db = getReadableDatabase();
+        ArrayList<String> list1 = new ArrayList<>();
+        ArrayList<Integer> list2 = new ArrayList<>();
+        ArrayList<Integer> list3 = new ArrayList<>();
+        ArrayList<Integer> list4 = new ArrayList<>();
+
+        Cursor cursor = db.rawQuery("SELECT logLastId FROM TripLogTable WHERE tableId = " + tableId, null);
+        cursor.moveToFirst();
+        int logLastId = cursor.getInt(0);
+
+        cursor = db.rawQuery("SELECT logLastId FROM TripLogTable WHERE tableId = " + (tableId - 1), null);
+        cursor.moveToFirst();
+        int logFirstId = cursor.getInt(0);
+
+        // 1 : time
+        // 2 : volt
+        // 3 : amp
+        // 4 : W
+        cursor = db.rawQuery("SELECT * FROM TripLog WHERE logId <= " + logLastId + " AND logId > " + logFirstId, null);
+        while (cursor.moveToNext()) {
+            list1.add(cursor.getString(1));
+            list2.add(cursor.getInt(2));
+            list3.add(cursor.getInt(3));
+            list4.add(cursor.getInt(4));
+        }
+        map.put("TIME", list1);
+        map.put("VOLT", list2);
+        map.put("AMP", list3);
+        map.put("W", list4);
+        return map;
+    }
+
+    public int getMaxW(int tableId) {
+        Map map = getTripLog(tableId);
+        ArrayList<Integer> wList = (ArrayList<Integer>) map.get("W");
+        int max = wList.get(0);
+        for (int i = 0; i < wList.size(); i++) {
+            if (wList.get(i) > max) { max = wList.get(i); }
+        }
+
+        return max;
     }
 
     public Map getTripLogTime(Map map) {

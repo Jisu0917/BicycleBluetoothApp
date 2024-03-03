@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.LinearGradient;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
@@ -81,18 +82,20 @@ public class LogGraph extends View {
         Paint dotPaint = new Paint();
         dotPaint.setColor(Color.WHITE);
         dotPaint.setStrokeWidth(0);
-        Paint linePaint = new Paint();
-        DashPathEffect dashPath = new DashPathEffect(new float[]{5,10}, 2);
-        linePaint.setStyle( Paint.Style.STROKE );
-        linePaint.setPathEffect(dashPath);
-        linePaint.setStrokeWidth(3);
 
         Paint pathPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        pathPaint.setStyle(Paint.Style.STROKE);
-        pathPaint.setStrokeWidth(5f);
-        pathPaint.setColor(Color.WHITE);
+        pathPaint.setStyle(Paint.Style.FILL);
+        LinearGradient linearGradient = new LinearGradient(200, 300, 200, 600, Color.rgb(235, 0, 0), Color.BLACK, Shader.TileMode.CLAMP);
+        pathPaint.setShader(linearGradient);
+
+        Paint pathStrokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        pathStrokePaint.setStyle(Paint.Style.STROKE);
+        pathStrokePaint.setColor(Color.WHITE);
+        pathStrokePaint.setStrokeWidth(5f);
+
         Path p = new Path();
         p.setFillType(EVEN_ODD);
+
 
         float adjustC = 0.5f * DEFINED_MAX_W;
         int adjustY = 230;
@@ -111,22 +114,51 @@ public class LogGraph extends View {
 
         }
         p.lineTo(firstDotX + dotDistance * (n-1), bottom - (value.get(n-1) * max / adjustC) + adjustY);
-        p.lineTo((getWidth() - 60), (getHeight() - 60));
+        p.lineTo((getWidth() - 60), (getHeight() - 40));
+        //p.close();
         canvas.drawPath(p, pathPaint);
+        canvas.drawPath(p, pathStrokePaint);
+
+        p.setFillType(Path.FillType.INVERSE_WINDING);
 
 
+        // 흰색 사각형 틀 (X, Y축을 대신한다.)
         Paint paint = new Paint(); // 페인트 객체 생성
-        paint.setColor(Color.WHITE); // 빨간색으로 설정
+        paint.setColor(Color.WHITE);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(4f);
         canvas.drawRoundRect(200, 100, getWidth() - 60, getHeight() - 40, 25f, 25f, paint);
 
+        // 0 그리기
+        Paint txtPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        txtPaint.setColor(Color.WHITE);
+        txtPaint.setTextSize(50f);
+        txtPaint.setTextAlign(Paint.Align.RIGHT);
+        canvas.drawText("0", 150, getHeight() - 50, txtPaint);
 
+        // 최댓값 숫자
+        canvas.drawText(maxW + "", 150, bottom - (max * max / adjustC) + adjustY, txtPaint);
 
-        Paint paint2 = new Paint();
-        paint2.setShader(new LinearGradient(100,0, 100,0, Color.BLACK, Color.rgb(255, 0, 0), Shader.TileMode.CLAMP));
-        paint.setStyle(Paint.Style.FILL);
-        paint.setStrokeWidth(4f);
+        // 최댓값 점선
+        Paint linePaint = new Paint();
+        DashPathEffect dashPath = new DashPathEffect(new float[]{20,20}, 2);
+        linePaint.setStyle( Paint.Style.STROKE );
+        linePaint.setPathEffect(dashPath);
+        linePaint.setStrokeWidth(4);
+        linePaint.setColor(Color.WHITE);
+
+        Path path = new Path();
+        for (int i = 0; i < n; i++) {
+            if (value.get(i) == max) {
+                path.moveTo(200, bottom - (value.get(i) * max / adjustC) + adjustY);
+                path.lineTo(firstDotX + dotDistance * i, bottom - (value.get(i) * max / adjustC) + adjustY);
+            }
+        }
+        canvas.drawPath(path, linePaint);
+
+        // Consumption Log 글씨 넣기
+        txtPaint.setTextSize(60f);
+        canvas.drawText("CONSUMPTION LOG", getWidth() - 80, 180, txtPaint);
 
     }
 }
