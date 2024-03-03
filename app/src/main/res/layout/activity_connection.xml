@@ -12,7 +12,9 @@
         android:layout_height="50dp"
         android:layout_margin="20dp"
         android:layout_marginStart="10dp"
-        android:src="@mipmap/ic_launcher"
+        android:src="@drawable/ic_menu_green"
+        android:background="@null"
+        android:scaleType="fitXY"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -22,7 +24,9 @@
         android:layout_height="50dp"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="20dp"
-        android:src="@mipmap/ic_launcher_round"
+        android:src="@drawable/ic_reload"
+        android:background="@null"
+        android:scaleType="fitXY"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btn_menu" />
 

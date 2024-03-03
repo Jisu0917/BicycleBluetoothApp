@@ -11,7 +11,9 @@
         android:layout_width="30dp"
         android:layout_height="40dp"
         android:layout_marginEnd="8dp"
-        android:src="@mipmap/ic_launcher"
+        android:src="@drawable/ic_back"
+        android:background="@null"
+        android:scaleType="fitXY"
         app:layout_constraintBottom_toBottomOf="@id/tv_back"
         app:layout_constraintEnd_toStartOf="@id/tv_back" />
 
@@ -83,7 +85,9 @@
         android:layout_height="50dp"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="20dp"
-        android:src="@mipmap/ic_launcher_round"
+        android:src="@drawable/ic_share"
+        android:background="@null"
+        android:scaleType="fitXY"
         app:layout_constraintBottom_toBottomOf="@id/tv_date"
         app:layout_constraintEnd_toEndOf="parent" />
 

@@ -14,7 +14,7 @@
         android:label="@string/app_name"
         android:roundIcon="@drawable/ic_main"
         android:supportsRtl="true"
-        android:theme="@style/Theme.BicycleBluetoothApp"
+        android:theme="@style/Theme.AppCompat.NoActionBar"
         tools:targetApi="31">
         <activity
             android:name="com.activerecycle.tripgauge.ConsumptionActivity"
