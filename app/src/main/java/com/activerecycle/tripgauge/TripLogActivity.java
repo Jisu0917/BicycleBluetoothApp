@@ -7,16 +7,25 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 public class TripLogActivity extends AppCompatActivity {
 
     ImageButton imgbtn_back, btn_share;
     TextView tv_back, tv_untitled, tv_date, tv_used_wh, tv_dist_km, tv_avrpwr_w;
     LogGraph graph_log;
 
+    DBHelper dbHelper;
+    static Map dataMap = new HashMap();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_triplog);
+
+        dbHelper = new DBHelper(TripLogActivity.this, 1);
 
         imgbtn_back = (ImageButton) findViewById(R.id.imgbtn_back);
         btn_share = (ImageButton) findViewById(R.id.btn_share);
@@ -44,5 +53,8 @@ public class TripLogActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        graph_log.map = dbHelper.getTripLogW(dataMap);
+        graph_log.maxW = dbHelper.getMaxW();
     }
 }

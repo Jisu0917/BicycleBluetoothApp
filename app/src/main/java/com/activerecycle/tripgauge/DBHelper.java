@@ -8,6 +8,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Map;
+
 public class DBHelper extends SQLiteOpenHelper {
     static final String DATABASE_NAME = "cycle.db";
 
@@ -136,5 +140,33 @@ public class DBHelper extends SQLiteOpenHelper {
         }
 
         return result;
+    }
+
+    public Map getTripLogW(Map map) {
+        // 읽기가 가능하게 DB 열기
+        SQLiteDatabase db = getReadableDatabase();
+        ArrayList<Integer> list = new ArrayList<>();
+
+        // DB에 있는 데이터를 쉽게 처리하기 위해 Cursor를 사용하여 테이블에 있는 모든 데이터 출력
+        Cursor cursor = db.rawQuery("SELECT w FROM TripLog", null);
+        while (cursor.moveToNext()) {
+            list.add(cursor.getInt(0));
+        }
+        map.put("W", list);
+        return map;
+    }
+
+    public Map getTripLogTime(Map map) {
+        // 읽기가 가능하게 DB 열기
+        SQLiteDatabase db = getReadableDatabase();
+        ArrayList<Integer> list = new ArrayList<>();
+
+        // DB에 있는 데이터를 쉽게 처리하기 위해 Cursor를 사용하여 테이블에 있는 모든 데이터 출력
+        Cursor cursor = db.rawQuery("SELECT * FROM TripLog", null);
+        while (cursor.moveToNext()) {
+            list.add(cursor.getInt(1));
+        }
+        map.put("TIME", list);
+        return map;
     }
 }

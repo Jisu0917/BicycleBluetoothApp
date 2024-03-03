@@ -21,6 +21,9 @@ import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TimeZone;
 
 public class ConsumptionActivity extends AppCompatActivity {
 
@@ -29,8 +32,8 @@ public class ConsumptionActivity extends AppCompatActivity {
     boolean btconnect = true;
 
     // 디바이스로부터 받는 데이터
-    int volt = 25; // 전압값 (0~25)
-    int amp = 30; // 전류값 (0~30)
+    int volt = 0; // 전압값 (0~25)
+    int amp = 0; // 전류값 (0~30)
     int soc = 0;  // 배터리 잔량
 
     // w = volt * amp;
@@ -43,12 +46,38 @@ public class ConsumptionActivity extends AppCompatActivity {
     // DBHelper
     DBHelper dbHelper;
 
+    
+    
+    /*
+     *
+     * Trip Log 그래프 확인용 코드
+     * - 삭제 요망
+     * */
+    LogGraph graph_log;
+
+    static Map dataMap = new HashMap();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_consumption);
 
         dbHelper = new DBHelper(ConsumptionActivity.this, 1);
+
+
+
+        /*
+         *
+         * Trip Log 그래프 확인용 코드
+         * - 삭제 요망
+         * */
+        graph_log.map = dbHelper.getTripLogW(dataMap);
+        graph_log.maxW = dbHelper.getMaxW();
+        System.out.println("graph_log.map : " + graph_log.map);
+        System.out.println("graph_log.maxW : "+ graph_log.maxW);
+
+
+
 
         //tv_title = (TextView) findViewById(R.id.tv_title);
         tv_w = (TextView) findViewById(R.id.tv_w);
@@ -89,9 +118,6 @@ public class ConsumptionActivity extends AppCompatActivity {
 
             return;  // 아래 내용 무시
         }
-
-        // W 표시
-        tv_w.setText(volt * amp + "W");
 
         // gps 주행 속도 측정
         final LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -170,34 +196,7 @@ public class ConsumptionActivity extends AppCompatActivity {
         final long[] mNow = new long[1];
         final Date[] mDate = new Date[1];
         SimpleDateFormat mFormat = new SimpleDateFormat("yyyy.MM.dd hh:mm:ss");
-
-//
-//        // 5초마다 실행
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                while (true) {
-//                    // 수행할 작업
-//                    mNow[0] = System.currentTimeMillis();
-//                    mDate[0] = new Date(mNow[0]);
-//                    String nowTime = mFormat.format(mDate[0]);
-//
-//                    long tripLogCount = dbHelper.getProfilesCount("TripLog");
-//
-//                    dbHelper.insert_TripLog((int) tripLogCount, nowTime, volt, amp);
-//
-//                    String allLog = dbHelper.getLog();
-//                    System.out.println(allLog);
-//
-//                    try {
-//                        Thread.sleep(5000);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }
-//        }).start();
-
+        mFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
 
 
         final int[] endOfTrip = {0};
@@ -213,6 +212,17 @@ public class ConsumptionActivity extends AppCompatActivity {
                     String nowTime = mFormat.format(mDate[0]);
 
                     long tripLogCount = dbHelper.getProfilesCount("TripLog");
+
+                    // W 표시
+                    /*
+                     * random() 난수 발생 코드는 확인용 코드임.
+                     * - 추후 삭제 요망
+                     * */
+                    volt = (int) (Math.random() * 25);
+                    amp = (int) (Math.random() * 30);
+                    tv_w.setText(volt * amp + "W");
+                    tv_w.invalidate();
+
                     dbHelper.insert_TripLog((int) tripLogCount, nowTime, volt, amp);
 
                     String allLog = dbHelper.getLog();
@@ -224,7 +234,7 @@ public class ConsumptionActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
-                    if (endOfTrip[0] == 10) {
+                    if (endOfTrip[0] == 5) {
                         System.out.println("##### end Of Trip ! ");
 
                         // 트립 저장
@@ -241,8 +251,6 @@ public class ConsumptionActivity extends AppCompatActivity {
                 }
             }
         }).start();
-
-
-
+        
     }
 }
