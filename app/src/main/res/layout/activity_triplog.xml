@@ -11,9 +11,9 @@
         android:layout_width="30dp"
         android:layout_height="40dp"
         android:layout_marginEnd="8dp"
-        android:src="@drawable/ic_back"
         android:background="@null"
         android:scaleType="fitXY"
+        android:src="@drawable/ic_back"
         app:layout_constraintBottom_toBottomOf="@id/tv_back"
         app:layout_constraintEnd_toStartOf="@id/tv_back" />
 
@@ -73,7 +73,7 @@
         android:paddingBottom="15dp"
         android:text="2023.10.25 (CURRENT)"
         android:textAllCaps="true"
-        android:textColor="@color/teal_200"
+        android:textColor="@color/green"
         android:textSize="25sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -85,9 +85,9 @@
         android:layout_height="50dp"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="20dp"
-        android:src="@drawable/ic_share"
         android:background="@null"
         android:scaleType="fitXY"
+        android:src="@drawable/ic_share"
         app:layout_constraintBottom_toBottomOf="@id/tv_date"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -111,116 +111,129 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/view" />
 
-    <TextView
-        android:id="@+id/tv_used"
+    <LinearLayout
+        android:id="@+id/ll1"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:fontFamily="sans-serif-light"
-        android:paddingStart="25dp"
-        android:paddingEnd="50dp"
-        android:text="used"
-        android:textAlignment="textStart"
-        android:textAllCaps="true"
-        android:textColor="@color/teal_200"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        app:layout_constraintHorizontal_weight="1"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/graph_log" />
-
-    <TextView
-        android:id="@+id/tv_dist"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:fontFamily="sans-serif-light"
-        android:paddingStart="20dp"
-        android:text="dist"
-        android:textAlignment="textStart"
-        android:textAllCaps="true"
-        android:textColor="@color/teal_200"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@+id/tv_avrpwr"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintHorizontal_weight="1"
-        app:layout_constraintStart_toEndOf="@+id/tv_used"
-        app:layout_constraintTop_toBottomOf="@id/graph_log" />
-
-    <TextView
-        android:id="@+id/tv_avrpwr"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:fontFamily="sans-serif-light"
-        android:paddingEnd="25dp"
-        android:text="avr.pwr"
-        android:textAlignment="textStart"
-        android:textAllCaps="true"
-        android:textColor="@color/teal_200"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintHorizontal_weight="1"
-        app:layout_constraintStart_toEndOf="@+id/tv_dist"
-        app:layout_constraintTop_toBottomOf="@id/graph_log" />
-
-    <TextView
-        android:id="@+id/tv_used_wh"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:fontFamily="sans-serif-light"
-        android:paddingStart="25dp"
-        android:paddingEnd="50dp"
-        android:text="96Wh"
-        android:textAlignment="textStart"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@+id/tv_dist_km"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toStartOf="@+id/ll2"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_weight="1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_used" />
+        app:layout_constraintTop_toBottomOf="@id/graph_log">
 
-    <TextView
-        android:id="@+id/tv_dist_km"
+        <TextView
+            android:id="@+id/tv_used"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:fontFamily="sans-serif-light"
+            android:paddingStart="25dp"
+            android:paddingEnd="50dp"
+            android:text="used"
+            android:textAlignment="textStart"
+            android:textAllCaps="true"
+            android:textColor="@color/green"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_used_wh"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-light"
+            android:paddingStart="25dp"
+            android:paddingEnd="50dp"
+            android:text="96Wh"
+            android:textAlignment="textStart"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:fontFamily="sans-serif-light"
-        android:paddingStart="15dp"
-        android:text="42.12KM"
-        android:textAlignment="textStart"
-        android:textAllCaps="true"
-        android:textColor="@color/white"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@+id/tv_avrpwr_w"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toStartOf="@+id/ll3"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_weight="1"
-        app:layout_constraintStart_toEndOf="@+id/tv_used_wh"
-        app:layout_constraintTop_toBottomOf="@id/tv_dist" />
+        app:layout_constraintStart_toEndOf="@+id/ll1"
+        app:layout_constraintTop_toBottomOf="@id/graph_log">
 
-    <TextView
-        android:id="@+id/tv_avrpwr_w"
+        <TextView
+            android:id="@+id/tv_dist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:fontFamily="sans-serif-light"
+            android:paddingStart="20dp"
+            android:text="dist"
+            android:textAlignment="textStart"
+            android:textAllCaps="true"
+            android:textColor="@color/green"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_dist_km"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-light"
+            android:paddingStart="15dp"
+            android:text="42.12KM"
+            android:textAlignment="textStart"
+            android:textAllCaps="true"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/ll3"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:fontFamily="sans-serif-light"
-        android:paddingEnd="25dp"
-        android:text="175W"
-        android:textAlignment="textStart"
-        android:textAllCaps="true"
-        android:textColor="@color/white"
-        android:textSize="22sp"
-        android:textStyle="bold"
+        android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_weight="1"
-        app:layout_constraintStart_toEndOf="@+id/tv_dist_km"
-        app:layout_constraintTop_toBottomOf="@id/tv_avrpwr" />
+        app:layout_constraintStart_toEndOf="@+id/ll2"
+        app:layout_constraintTop_toBottomOf="@id/graph_log">
+
+        <TextView
+            android:id="@+id/tv_avrpwr"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:fontFamily="sans-serif-light"
+            android:paddingEnd="25dp"
+            android:text="avr.pwr"
+            android:textAlignment="textStart"
+            android:textAllCaps="true"
+            android:textColor="@color/green"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_avrpwr_w"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-light"
+            android:paddingEnd="25dp"
+            android:text="175W"
+            android:textAlignment="textStart"
+            android:textAllCaps="true"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
 
     <include layout="@layout/content_recordlist" />
 
