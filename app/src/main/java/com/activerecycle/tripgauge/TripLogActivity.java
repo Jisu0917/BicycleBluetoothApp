@@ -54,7 +54,7 @@ public class TripLogActivity extends AppCompatActivity {
             }
         });
 
-        graph_log.map = dbHelper.getTripLogW(dataMap);
+        graph_log.map = dbHelper.getTripLogW(dataMap, 4);
         graph_log.maxW = dbHelper.getMaxW();
     }
 }

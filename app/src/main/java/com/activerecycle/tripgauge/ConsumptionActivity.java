@@ -71,7 +71,7 @@ public class ConsumptionActivity extends AppCompatActivity {
          * Trip Log 그래프 확인용 코드
          * - 삭제 요망
          * */
-        graph_log.map = dbHelper.getTripLogW(dataMap);
+        graph_log.map = dbHelper.getTripLogW(dataMap, 2);
         graph_log.maxW = dbHelper.getMaxW();
         System.out.println("graph_log.map : " + graph_log.map);
         System.out.println("graph_log.maxW : "+ graph_log.maxW);
@@ -204,7 +204,7 @@ public class ConsumptionActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                dbHelper.deleteTable("TripLog");  //TripLog 테이블 초기화
+                //dbHelper.deleteTable("TripLog");  //TripLog 테이블 초기화
                 while (true) {
                     // 수행할 작업
                     mNow[0] = System.currentTimeMillis();
@@ -226,7 +226,7 @@ public class ConsumptionActivity extends AppCompatActivity {
                     dbHelper.insert_TripLog((int) tripLogCount, nowTime, volt, amp);
 
                     String allLog = dbHelper.getLog();
-                    System.out.println(allLog);
+                    //System.out.println(allLog);
 
                     try {
                         Thread.sleep(5000);
@@ -238,11 +238,17 @@ public class ConsumptionActivity extends AppCompatActivity {
                         System.out.println("##### end Of Trip ! ");
 
                         // 트립 저장
-                        long tripCount = dbHelper.getProfilesCount("Trip");
-                        dbHelper.insert_Trip((int) tripCount, "Untitled", nowTime, dbHelper.getMaxW(), dbHelper.getUsedW(), 2150, dbHelper.getAvgPwrW());
+                        long tripCount = dbHelper.getProfilesCount("TripSTATS");
+                        dbHelper.insert_TripSTATS((int) tripCount, "Untitled", nowTime, dbHelper.getMaxW(), dbHelper.getUsedW(), 2150, dbHelper.getAvgPwrW());
 
-                        String allTrip = dbHelper.getTrip();
+                        String allTrip = dbHelper.getTripSTATS();
                         System.out.println(allTrip);
+
+                        long tripLogTableCount = dbHelper.getProfilesCount("TripLogTable");
+
+                        dbHelper.insert_TripLogTable((int) tripLogTableCount, (int) tripLogCount);
+                        String allTripLogTable = dbHelper.getTripLogTable();
+                        System.out.println(allTripLogTable);
 
                         break;
                     }

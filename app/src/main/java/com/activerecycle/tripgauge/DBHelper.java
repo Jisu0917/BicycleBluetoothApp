@@ -21,14 +21,23 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        db.execSQL("CREATE TABLE TripLogTable ( tableId INT primary key, logLastId INT )");
         db.execSQL("CREATE TABLE TripLog( logId INT primary key, time TEXT, volt INT, amp INT, w INT )");
-        db.execSQL("CREATE TABLE Trip( tripId INTEGER primary key, name TEXT , date DATE not null, max_w INTEGER, used INTEGER, dist INTEGER, avrpwr INTEGER )");
+        db.execSQL("CREATE TABLE TripSTATS( tripId INTEGER primary key, name TEXT , date DATE not null, max_w INTEGER, used INTEGER, dist INTEGER, avrpwr INTEGER )");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int i, int i1) {
+        db.execSQL("DROP TABLE IF EXISTS TripLogTable");
         db.execSQL("DROP TABLE IF EXISTS TripLog");
-        onCreate(db);
+        db.execSQL("DROP TABLE IF EXISTS TripSTATS");
+    }
+
+    // TripLogTable Table 데이터 입력
+    public void insert_TripLogTable(int tableId, int logLastId) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL("INSERT INTO TripLogTable VALUES("+ tableId +", " + logLastId + ")");
+        db.close();
     }
 
     // TripLog Table 데이터 입력
@@ -39,10 +48,10 @@ public class DBHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    // Trip Table 데이터 입력
-    public void insert_Trip(int id, String name, String date, int max_w, int used, int dist, int avrpwr) {
+    // TripSTATS Table 데이터 입력
+    public void insert_TripSTATS(int id, String name, String date, int max_w, int used, int dist, int avrpwr) {
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("INSERT INTO Trip VALUES("+ id +", '" + name + "', '" + date + "', " + max_w + ", " + used + ", " + dist + ", " + avrpwr + ")");
+        db.execSQL("INSERT INTO TripSTATS VALUES("+ id +", '" + name + "', '" + date + "', " + max_w + ", " + used + ", " + dist + ", " + avrpwr + ")");
         db.close();
     }
 
@@ -120,14 +129,14 @@ public class DBHelper extends SQLiteOpenHelper {
         return cursor.getInt(0);
     }
 
-    // Trip Table 조회
-    public String getTrip() {
+    // TripSTATS Table 조회
+    public String getTripSTATS() {
         // 읽기가 가능하게 DB 열기
         SQLiteDatabase db = getReadableDatabase();
         String result = "";
 
         // DB에 있는 데이터를 쉽게 처리하기 위해 Cursor를 사용하여 테이블에 있는 모든 데이터 출력
-        Cursor cursor = db.rawQuery("SELECT * FROM Trip", null);
+        Cursor cursor = db.rawQuery("SELECT * FROM TripSTATS", null);
         while (cursor.moveToNext()) {
             result += "id : " + cursor.getInt(0)
                     + " name : " + cursor.getString(1)
@@ -142,13 +151,26 @@ public class DBHelper extends SQLiteOpenHelper {
         return result;
     }
 
-    public Map getTripLogW(Map map) {
+    public Map getTripLogW(Map map, int tableId) {
+
+        long tripLogTableCount = getProfilesCount("TripLogTable");
+        if (tableId >= tripLogTableCount) {
+            return map;
+        }
+
         // 읽기가 가능하게 DB 열기
         SQLiteDatabase db = getReadableDatabase();
         ArrayList<Integer> list = new ArrayList<>();
 
-        // DB에 있는 데이터를 쉽게 처리하기 위해 Cursor를 사용하여 테이블에 있는 모든 데이터 출력
-        Cursor cursor = db.rawQuery("SELECT w FROM TripLog", null);
+        Cursor cursor = db.rawQuery("SELECT logLastId FROM TripLogTable WHERE tableId = " + tableId, null);
+        cursor.moveToFirst();
+        int logLastId = cursor.getInt(0);
+
+        cursor = db.rawQuery("SELECT logLastId FROM TripLogTable WHERE tableId = " + (tableId - 1), null);
+        cursor.moveToFirst();
+        int logFirstId = cursor.getInt(0);
+
+        cursor = db.rawQuery("SELECT w FROM TripLog WHERE logId <= " + logLastId + " AND logId > " + logFirstId, null);
         while (cursor.moveToNext()) {
             list.add(cursor.getInt(0));
         }
@@ -168,5 +190,22 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         map.put("TIME", list);
         return map;
+    }
+
+    // TripLogTable Table 조회
+    public String getTripLogTable() {
+        // 읽기가 가능하게 DB 열기
+        SQLiteDatabase db = getReadableDatabase();
+        String result = "";
+
+        // DB에 있는 데이터를 쉽게 처리하기 위해 Cursor를 사용하여 테이블에 있는 모든 데이터 출력
+        Cursor cursor = db.rawQuery("SELECT * FROM TripLogTable", null);
+        while (cursor.moveToNext()) {
+            result += "#TripLogId : " + cursor.getInt(0)
+                    + " lastLogId : " + cursor.getInt(1)
+                    + "\n";
+        }
+
+        return result;
     }
 }
