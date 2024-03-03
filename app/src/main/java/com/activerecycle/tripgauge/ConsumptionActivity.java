@@ -171,10 +171,41 @@ public class ConsumptionActivity extends AppCompatActivity {
         final Date[] mDate = new Date[1];
         SimpleDateFormat mFormat = new SimpleDateFormat("yyyy.MM.dd hh:mm:ss");
 
+//
+//        // 5초마다 실행
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                while (true) {
+//                    // 수행할 작업
+//                    mNow[0] = System.currentTimeMillis();
+//                    mDate[0] = new Date(mNow[0]);
+//                    String nowTime = mFormat.format(mDate[0]);
+//
+//                    long tripLogCount = dbHelper.getProfilesCount("TripLog");
+//
+//                    dbHelper.insert_TripLog((int) tripLogCount, nowTime, volt, amp);
+//
+//                    String allLog = dbHelper.getLog();
+//                    System.out.println(allLog);
+//
+//                    try {
+//                        Thread.sleep(5000);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//        }).start();
+
+
+
+        final int[] endOfTrip = {0};
         // 5초마다 실행
         new Thread(new Runnable() {
             @Override
             public void run() {
+                dbHelper.deleteTable("TripLog");  //TripLog 테이블 초기화
                 while (true) {
                     // 수행할 작업
                     mNow[0] = System.currentTimeMillis();
@@ -182,7 +213,6 @@ public class ConsumptionActivity extends AppCompatActivity {
                     String nowTime = mFormat.format(mDate[0]);
 
                     long tripLogCount = dbHelper.getProfilesCount("TripLog");
-
                     dbHelper.insert_TripLog((int) tripLogCount, nowTime, volt, amp);
 
                     String allLog = dbHelper.getLog();
@@ -193,6 +223,21 @@ public class ConsumptionActivity extends AppCompatActivity {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+
+                    if (endOfTrip[0] == 10) {
+                        System.out.println("##### end Of Trip ! ");
+
+                        // 트립 저장
+                        long tripCount = dbHelper.getProfilesCount("Trip");
+                        dbHelper.insert_Trip((int) tripCount, "Untitled", nowTime, dbHelper.getMaxW(), dbHelper.getUsedW(), 2150, dbHelper.getAvgPwrW());
+
+                        String allTrip = dbHelper.getTrip();
+                        System.out.println(allTrip);
+
+                        break;
+                    }
+
+                    endOfTrip[0] += 1;
                 }
             }
         }).start();

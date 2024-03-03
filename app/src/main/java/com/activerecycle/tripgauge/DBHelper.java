@@ -17,7 +17,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE TripLog( logId INT primary key, time TEXT, volt INT, amp INT )");
+        db.execSQL("CREATE TABLE TripLog( logId INT primary key, time TEXT, volt INT, amp INT, w INT )");
         db.execSQL("CREATE TABLE Trip( tripId INTEGER primary key, name TEXT , date DATE not null, max_w INTEGER, used INTEGER, dist INTEGER, avrpwr INTEGER )");
     }
 
@@ -29,8 +29,9 @@ public class DBHelper extends SQLiteOpenHelper {
 
     // TripLog Table 데이터 입력
     public void insert_TripLog(int id, String time, int volt, int amp) {
+        int w = volt * amp;
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("INSERT INTO TripLog VALUES("+ id +", '" + time + "', " + volt + ", " + amp + ")");
+        db.execSQL("INSERT INTO TripLog VALUES("+ id +", '" + time + "', " + volt + ", " + amp + ", " + w + ")");
         db.close();
     }
 
@@ -55,6 +56,11 @@ public class DBHelper extends SQLiteOpenHelper {
 //        db.close();
 //    }
 
+    public void deleteTable(String TABLE_NAME) {
+        SQLiteDatabase db = getReadableDatabase();
+        db.execSQL("DELETE FROM " + TABLE_NAME);
+    }
+
     // TripLog Table 조회
     public String getLog() {
         // 읽기가 가능하게 DB 열기
@@ -65,9 +71,10 @@ public class DBHelper extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery("SELECT * FROM TripLog", null);
         while (cursor.moveToNext()) {
             result += "id : " + cursor.getInt(0)
-                    + " time : " + cursor.getString(1)
+                    + ", time : " + cursor.getString(1)
                     + ", volt : " + cursor.getInt(2)
                     + ", amp : " + cursor.getInt(3)
+                    + ", w : " + cursor.getInt(4)
                     + "\n";
         }
 
@@ -79,5 +86,55 @@ public class DBHelper extends SQLiteOpenHelper {
         long count = DatabaseUtils.queryNumEntries(db, TABLE_NAME);
         db.close();
         return count;
+    }
+
+    public int getMaxW() {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT MAX(w) FROM TripLog", null);
+        cursor.moveToFirst();
+        return cursor.getInt(0);
+    }
+
+    public int getUsedW() {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM TripLog", null);
+        cursor.moveToFirst();
+        int first = cursor.getInt(4);
+        cursor.moveToLast();
+        int last = cursor.getInt(4);
+        int usedW = first - last;
+        if (usedW < 0) {
+            usedW = -usedW;
+        }
+        return usedW;
+    }
+
+    public int getAvgPwrW() {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT AVG(w) FROM TripLog", null);
+        cursor.moveToFirst();
+        return cursor.getInt(0);
+    }
+
+    // Trip Table 조회
+    public String getTrip() {
+        // 읽기가 가능하게 DB 열기
+        SQLiteDatabase db = getReadableDatabase();
+        String result = "";
+
+        // DB에 있는 데이터를 쉽게 처리하기 위해 Cursor를 사용하여 테이블에 있는 모든 데이터 출력
+        Cursor cursor = db.rawQuery("SELECT * FROM Trip", null);
+        while (cursor.moveToNext()) {
+            result += "id : " + cursor.getInt(0)
+                    + " name : " + cursor.getString(1)
+                    + ", date : " + cursor.getString(2)
+                    + ", max_w : " + cursor.getInt(3)
+                    + ", used : " + cursor.getInt(4)
+                    + ", dist : " + cursor.getInt(5)
+                    + ", avrpwr : " + cursor.getInt(6)
+                    + "\n";
+        }
+
+        return result;
     }
 }
