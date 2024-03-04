@@ -4,9 +4,11 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/bjisu/AndroidStudioProjects/BicycleBluetoothApp/app/src/main/res/drawable/background_rounding_white.xml" value="0.1925" />
+        <entry key="..\:/Users/bjisu/AndroidStudioProjects/BicycleBluetoothApp/app/src/main/res/drawable/background_rounding_white_2.xml" value="0.1" />
         <entry key="..\:/Users/bjisu/AndroidStudioProjects/BicycleBluetoothApp/app/src/main/res/drawable/selector_switch.xml" value="0.1485" />
         <entry key="..\:/Users/bjisu/AndroidStudioProjects/BicycleBluetoothApp/app/src/main/res/drawable/stroke_rounding_white.xml" value="0.1" />
         <entry key="..\:/Users/bjisu/AndroidStudioProjects/BicycleBluetoothApp/app/src/main/res/drawable/stroke_rounding_white_2.xml" value="0.1" />
+        <entry key="..\:/Users/bjisu/AndroidStudioProjects/BicycleBluetoothApp/app/src/main/res/drawable/stroke_rounding_white_3.xml" value="0.1" />
         <entry key="..\:/Users/bjisu/AndroidStudioProjects/BicycleBluetoothApp/app/src/main/res/drawable/switch_thumb.xml" value="0.1485" />
         <entry key="..\:/Users/bjisu/AndroidStudioProjects/BicycleBluetoothApp/app/src/main/res/drawable/switch_track_off.xml" value="0.1485" />
         <entry key="..\:/Users/bjisu/AndroidStudioProjects/BicycleBluetoothApp/app/src/main/res/drawable/switch_track_on.xml" value="0.1485" />
@@ -18,6 +20,7 @@
         <entry key="..\:/Users/bjisu/AndroidStudioProjects/BicycleBluetoothApp/app/src/main/res/layout/content_list.xml" value="0.2526041666666667" />
         <entry key="..\:/Users/bjisu/AndroidStudioProjects/BicycleBluetoothApp/app/src/main/res/layout/content_modulelist.xml" value="0.20811965811965813" />
         <entry key="..\:/Users/bjisu/AndroidStudioProjects/BicycleBluetoothApp/app/src/main/res/layout/content_recordlist.xml" value="0.1" />
+        <entry key="..\:/Users/bjisu/AndroidStudioProjects/BicycleBluetoothApp/app/src/main/res/layout/custom_record_info.xml" value="0.23669724770642203" />
         <entry key="..\:/Users/bjisu/AndroidStudioProjects/BicycleBluetoothApp/app/src/main/res/layout/dialog_savetrip.xml" value="0.4514991181657848" />
         <entry key="..\:/Users/bjisu/AndroidStudioProjects/BicycleBluetoothApp/app/src/main/res/layout/tmplayout.xml" value="0.1" />
       </map>

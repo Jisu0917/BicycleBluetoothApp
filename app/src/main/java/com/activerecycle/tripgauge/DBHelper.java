@@ -161,6 +161,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         Cursor cursor = db.rawQuery("SELECT * FROM TripSTATS WHERE tripId = " + tripId, null);
         cursor.moveToFirst();
+        map.put("ID", cursor.getInt(0));
         map.put("NAME", cursor.getString(1));
         map.put("DATE", cursor.getString(2));
         map.put("MAX_W", cursor.getInt(3));
