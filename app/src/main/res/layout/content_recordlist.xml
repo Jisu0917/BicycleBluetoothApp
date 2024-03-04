@@ -12,7 +12,7 @@
     <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="50dp">
+        android:layout_marginBottom="0dp">
         <LinearLayout
             android:id="@+id/recordlist_layout"
             android:layout_width="match_parent"
