@@ -1,12 +1,14 @@
 package com.activerecycle.tripgauge;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -15,7 +17,10 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -45,6 +50,7 @@ public class ConsumptionActivity extends AppCompatActivity {
 
     // DBHelper
     DBHelper dbHelper;
+    String tripName;
 
     static Map dataMap = new HashMap();
 
@@ -213,18 +219,14 @@ public class ConsumptionActivity extends AppCompatActivity {
                     if (endOfTrip[0] == 5) {
                         System.out.println("##### end Of Trip ! ");
 
-                        // 트립 저장
-                        long tripLogTableCount = dbHelper.getProfilesCount("TripLogTable");
+                        Handler mHandler = new Handler(Looper.getMainLooper());
+                        mHandler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                showSaveTripDialog((int) tripLogCount, nowTime);
+                            }
+                        }, 0);
 
-                        dbHelper.insert_TripLogTable((int) tripLogTableCount, (int) tripLogCount);
-                        String allTripLogTable = dbHelper.getTripLogTable();
-                        System.out.println(allTripLogTable);
-
-                        long tripCount = dbHelper.getProfilesCount("TripSTATS");
-                        dbHelper.insert_TripSTATS((int) tripCount, "Untitled", nowTime, dbHelper.getMaxW((int) tripLogTableCount), dbHelper.getUsedW((int) tripLogTableCount), 2150, dbHelper.getAvgPwrW((int) tripLogTableCount));
-
-                        String allTrip = dbHelper.getTripSTATS();
-                        System.out.println(allTrip);
 
                         break;
                     }
@@ -234,5 +236,42 @@ public class ConsumptionActivity extends AppCompatActivity {
             }
         }).start();
         
+    }
+
+    private void showSaveTripDialog(int tripLogCount, String nowTime) {
+        View dialogView = (View) View.inflate(
+                ConsumptionActivity.this, R.layout.dialog_savetrip, null);
+        AlertDialog.Builder dig = new AlertDialog.Builder(ConsumptionActivity.this, R.style.Theme_Dialog);
+        dig.setView(dialogView);
+        dig.setTitle("Save this trip!");
+
+        final EditText editText = (EditText) dialogView.findViewById(R.id.editText_tripTitle);
+
+        dig.setNegativeButton("취소", null);
+        dig.setPositiveButton("확인", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                tripName = String.valueOf(editText.getText());
+
+                // 트립 저장
+                long tripLogTableCount = dbHelper.getProfilesCount("TripLogTable");
+
+                dbHelper.insert_TripLogTable((int) tripLogTableCount, (int) tripLogCount);
+                String allTripLogTable = dbHelper.getTripLogTable();
+                System.out.println(allTripLogTable);
+
+                long tripCount = dbHelper.getProfilesCount("TripSTATS");
+
+                if (tripName == null) { tripName = "Untitled"; }
+                dbHelper.insert_TripSTATS((int) tripCount, tripName, nowTime, dbHelper.getMaxW((int) tripLogTableCount), dbHelper.getUsedW((int) tripLogTableCount), 2150, dbHelper.getAvgPwrW((int) tripLogTableCount));
+
+                String allTrip = dbHelper.getTripSTATS();
+                System.out.println(allTrip);
+            }
+        });
+
+        dig.setCancelable(false);
+        dig.show();
     }
 }

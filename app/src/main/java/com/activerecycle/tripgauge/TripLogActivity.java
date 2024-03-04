@@ -57,7 +57,10 @@ public class TripLogActivity extends AppCompatActivity {
             }
         });
 
-        TABLE_ID = 11;
+        //마지막 트립 불러오기
+        long tripLogTableCount = dbHelper.getProfilesCount("TripLogTable");
+
+        TABLE_ID = (int) tripLogTableCount - 1;
         graph_log.map = dbHelper.getTripLogW(dataMap, TABLE_ID);
         graph_log.maxW = dbHelper.getMaxW(TABLE_ID);
 
