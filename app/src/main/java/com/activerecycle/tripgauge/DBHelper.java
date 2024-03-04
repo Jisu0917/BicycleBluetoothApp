@@ -155,6 +155,22 @@ public class DBHelper extends SQLiteOpenHelper {
         return result;
     }
 
+    public Map getTripSTATSbyID(int tripId) {  //tripId equals tableId (probably)
+        SQLiteDatabase db = getReadableDatabase();
+        Map map = new HashMap();
+
+        Cursor cursor = db.rawQuery("SELECT * FROM TripSTATS WHERE tripId = " + tripId, null);
+        cursor.moveToFirst();
+        map.put("NAME", cursor.getString(1));
+        map.put("DATE", cursor.getString(2));
+        map.put("MAX_W", cursor.getInt(3));
+        map.put("USED", cursor.getInt(4));
+        map.put("DIST", cursor.getInt(5));
+        map.put("AVRPWR", cursor.getInt(6));
+
+        return map;
+    }
+
     public Map getTripLogW(Map map, int tableId) {
 
         long tripLogTableCount = getProfilesCount("TripLogTable");

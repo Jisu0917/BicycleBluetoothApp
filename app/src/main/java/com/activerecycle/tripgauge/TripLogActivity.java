@@ -8,6 +8,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,8 +57,24 @@ public class TripLogActivity extends AppCompatActivity {
             }
         });
 
-        TABLE_ID = 1;
+        TABLE_ID = 11;
         graph_log.map = dbHelper.getTripLogW(dataMap, TABLE_ID);
         graph_log.maxW = dbHelper.getMaxW(TABLE_ID);
+
+        Map tripSTATSmap = dbHelper.getTripSTATSbyID(TABLE_ID);
+        String tripName = (String) tripSTATSmap.get("NAME");
+        String tripDateTime = (String) tripSTATSmap.get("DATE");
+        String[] s = tripDateTime.split(" ");
+        String tripDate = s[0];
+        int usedWh = (int) tripSTATSmap.get("USED");
+        int dist = (int) tripSTATSmap.get("DIST");
+        double ddist = dist * 0.01;
+        int avrpwr = (int) tripSTATSmap.get("AVRPWR");
+
+        tv_untitled.setText(tripName);
+        tv_date.setText(tripDate);
+        tv_used_wh.setText(usedWh + "Wh");
+        tv_dist_km.setText(ddist + "KM");
+        tv_avrpwr_w.setText(avrpwr + "W");
     }
 }
