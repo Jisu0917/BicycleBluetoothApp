@@ -6,6 +6,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -16,10 +17,14 @@ public class SettingsActivity extends AppCompatActivity {
     Switch switch1, switch2, switch3, switch4;
     Button btn_mph, btn_reset, btn_clear;
 
+    DBHelper dbHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+
+        dbHelper = new DBHelper(SettingsActivity.this, 1);
 
         imgbtn_back = (ImageButton) findViewById(R.id.imgbtn_back);
         tv_back = (TextView) findViewById(R.id.tv_back);
@@ -42,6 +47,27 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 finish();
+            }
+        });
+
+        btn_reset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                long initcount = dbHelper.getProfileCount("TripLogTable");
+                int id = 1;
+                while (true) {
+                    dbHelper.deleteTrip(id);
+
+                    dbHelper.insertTripLogLastId();
+                    dbHelper.insertTripLogTableLastId();
+                    dbHelper.insertTripSTATSLastId();
+
+                    long count = dbHelper.getProfileCount("TripLogTable");
+
+                    if (count == 0) { break; }
+                    id++;
+                }
+                Toast.makeText(SettingsActivity.this, "모든 트립을 삭제했습니다.", Toast.LENGTH_SHORT).show();
             }
         });
     }

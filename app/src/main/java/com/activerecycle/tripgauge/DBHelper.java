@@ -393,10 +393,19 @@ public class DBHelper extends SQLiteOpenHelper {
             map.put("USED", cursor.getInt(4));
             map.put("DIST", cursor.getInt(5));
             map.put("AVRPWR", cursor.getInt(6));
-        }
 
-        cursor.close();
-        db.close();
+            cursor.close();
+            db.close();
+        }
+        else {
+            map.put("ID", -1);
+            map.put("NAME", "null");
+            map.put("DATE", "null");
+            map.put("MAX_W", -1);
+            map.put("USED", -1);
+            map.put("DIST", -1);
+            map.put("AVRPWR", -1);
+        }
         return map;
     }
 
@@ -408,6 +417,29 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public Map getTripLogW(Map map, int tableId) {
+        //TODO: 실시간 그래프 그리기
+        if (tableId == -1) {  // Now -ing (Current)
+            SQLiteDatabase db = getReadableDatabase();
+            ArrayList<Integer> list = new ArrayList<>();
+
+            int logFirstId = 0;
+
+            Cursor cursor = db.rawQuery("SELECT logLastId FROM TripLogTable ORDER BY tableId DESC LIMIT 1", null);
+            if (cursor != null && cursor.moveToFirst()) {
+                logFirstId = cursor.getInt(0);
+            }
+
+            cursor = db.rawQuery("SELECT w FROM TripLog WHERE logId > " + logFirstId, null);
+            while (cursor.moveToNext()) {
+                list.add(cursor.getInt(0));
+            }
+
+            System.out.println("w list : " + list);
+            map.put("W", list);
+            cursor.close();
+            db.close();
+            return map;
+        }
 
         int tripLogTableLastId = getTripLogTableLastId();
         if (tableId > tripLogTableLastId) {
@@ -489,20 +521,34 @@ public class DBHelper extends SQLiteOpenHelper {
             return map;
 
         } else {
+            list1.add("null");
+            list2.add(-1);
+            list3.add(-1);
+            list4.add(-1);
+
+            map.put("TIME", list1);
+            map.put("VOLT", list2);
+            map.put("AMP", list3);
+            map.put("W", list4);
+
             cursor.close();
-            return null;
+            return map;
         }
     }
 
     public int getMaxW(int tableId) {
-        Map map = getTripLog(tableId);
-        ArrayList<Integer> wList = (ArrayList<Integer>) map.get("W");
-        int max = wList.get(0);
-        for (int i = 0; i < wList.size(); i++) {
-            if (wList.get(i) > max) { max = wList.get(i); }
-        }
+        if (tableId >= 1) {
+            Map map = getTripLog(tableId);
+            ArrayList<Integer> wList = (ArrayList<Integer>) map.get("W");
+            int max = wList.get(0);
+            for (int i = 0; i < wList.size(); i++) {
+                if (wList.get(i) > max) {
+                    max = wList.get(i);
+                }
+            }
 
-        return max;
+            return max;
+        } else return -1;
     }
 
     public Map getTripLogTime(Map map) {

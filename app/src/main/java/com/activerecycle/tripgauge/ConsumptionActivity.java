@@ -38,6 +38,8 @@ import java.util.regex.Pattern;
 
 public class ConsumptionActivity extends AppCompatActivity {
     static String EXTERNAL_STORAGE_PATH = "";
+    static int endOfTrip = 0;
+    static Thread thread;
 
     // 앱에서 디바이스에게 주는 데이터
     int speed = 0;
@@ -73,8 +75,6 @@ public class ConsumptionActivity extends AppCompatActivity {
         } else {
             EXTERNAL_STORAGE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath();
         }
-
-        checkDangerousPermissions();
 
 
         dbHelper = new DBHelper(ConsumptionActivity.this, 1);
@@ -199,9 +199,9 @@ public class ConsumptionActivity extends AppCompatActivity {
         mFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
 
 
-        final int[] endOfTrip = {0};
+        endOfTrip = 0;
         // 5초마다 실행
-        new Thread(new Runnable() {
+        thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (true) {
@@ -225,10 +225,12 @@ public class ConsumptionActivity extends AppCompatActivity {
                     //dbHelper.printTablesCounts();
 
                     dbHelper.insert_TripLog(tripLogId, nowTime, volt, amp);
-                    String allLog = dbHelper.getLog();
-                    System.out.println(allLog);
+//                    String allLog = dbHelper.getLog();
+//                    System.out.println(allLog);
                     dbHelper.insertTripLogLastId();
 
+
+                    TripLogActivity.showCurrentTrip(dbHelper);
 
                     try {
                         Thread.sleep(1000);
@@ -236,7 +238,7 @@ public class ConsumptionActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
-                    if (endOfTrip[0] == 5) {
+                    if (endOfTrip == 20) {  //TODO: Trip이 끝나는 기준 ? 디바이스에서 정보 받아오나?
                         System.out.println("##### end Of Trip ! ");
 
                         Handler mHandler = new Handler(Looper.getMainLooper());
@@ -251,27 +253,29 @@ public class ConsumptionActivity extends AppCompatActivity {
                         break;
                     }
 
-                    endOfTrip[0] += 1;
+                    endOfTrip += 1;
                 }
             }
-        }).start();
+        });
+        thread.start();
         
     }
 
-    private void showSaveTripDialog(int tripLogCount, String nowTime) {
+    public void showSaveTripDialog(int tripLogId, String nowTime) {
         View dialogView = (View) View.inflate(
-                ConsumptionActivity.this, R.layout.dialog_savetrip, null);
-        AlertDialog.Builder dig = new AlertDialog.Builder(ConsumptionActivity.this, R.style.Theme_Dialog);
+                getApplicationContext(), R.layout.dialog_savetrip, null);
+        AlertDialog.Builder dig = new AlertDialog.Builder(getApplicationContext(), R.style.Theme_Dialog);
         dig.setView(dialogView);
         dig.setTitle("Save this trip!");
 
-        Toast.makeText(getApplicationContext(), "한글, 영문, 숫자만 입력 가능합니다.", Toast.LENGTH_SHORT).show();
-
+        if ( getApplicationContext().equals(ConsumptionActivity.this) ) {
+            Toast.makeText(getApplicationContext(), "한글, 영문, 숫자만 입력 가능합니다.", Toast.LENGTH_SHORT).show();
+        }
         final EditText editText = (EditText) dialogView.findViewById(R.id.editText_tripTitle);
         editText.setFilters(new InputFilter[]{new InputFilter() {
             @Override
             public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
-                Pattern ps = Pattern.compile("^[a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ \\u318D\\u119E\\u11A2\\u2022\\u2025a\\u00B7\\uFE55]+$");
+                Pattern ps = Pattern.compile("^[a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ :()_+]+$");
                 if (source.equals("") || ps.matcher(source).matches()) {
                     return source;
                 }
@@ -289,17 +293,19 @@ public class ConsumptionActivity extends AppCompatActivity {
                 // 트립 저장
                 int tripLogTableId = dbHelper.getTripLogTableLastId() + 1;
 
-                dbHelper.insert_TripLogTable(tripLogTableId, tripLogCount);
+                dbHelper.insert_TripLogTable(tripLogTableId, tripLogId);
                 dbHelper.insertTripLogTableLastId();
 
                 String allTripLogTable = dbHelper.getTripLogTable();
                 System.out.println(allTripLogTable);
 
-                int tripCount = dbHelper.getTripSTATSLastId();
+                int tripSTATSId = dbHelper.getTripSTATSLastId() + 1;
 
                 if (tripName == null) { tripName = "Untitled"; }
-                dbHelper.insert_TripSTATS((int) tripCount, tripName, nowTime, dbHelper.getMaxW((int) tripLogTableId), dbHelper.getUsedW((int) tripLogTableId), 2150, dbHelper.getAvgPwrW((int) tripLogTableId));
+                dbHelper.insert_TripSTATS(tripSTATSId, tripName, nowTime, dbHelper.getMaxW(tripSTATSId), dbHelper.getUsedW(tripSTATSId), 2150, dbHelper.getAvgPwrW(tripSTATSId));
                 dbHelper.insertTripSTATSLastId();
+
+                Toast.makeText(getApplicationContext(), "트립이 저장되었습니다.", Toast.LENGTH_SHORT).show();
 
                 String allTrip = dbHelper.getTripSTATS();
                 System.out.println(allTrip);
@@ -326,41 +332,5 @@ public class ConsumptionActivity extends AppCompatActivity {
 
         dig.setCancelable(false);
         dig.show();
-    }
-
-    private void checkDangerousPermissions() {
-        String[] permissions = new String[0];
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-            permissions = new String[] {
-                    Manifest.permission.MANAGE_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.INTERNET,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-            };
-        } else {
-            permissions = new String[] {
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.INTERNET,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-            };
-        }
-
-        int permissionCheck = PackageManager.PERMISSION_GRANTED;
-        for (String permission : permissions) {
-            permissionCheck = ContextCompat.checkSelfPermission(this, permission);
-            if (permissionCheck == PackageManager.PERMISSION_DENIED) {
-                break;
-            }
-        }
-
-        if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "권한 있음", Toast.LENGTH_SHORT).show();
-        } else {
-            ActivityCompat.requestPermissions(this, permissions, 1);
-        }
     }
 }

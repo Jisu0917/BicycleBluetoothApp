@@ -10,6 +10,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.text.InputFilter;
 import android.text.Spanned;
@@ -45,7 +47,7 @@ public class TripLogActivity extends AppCompatActivity {
     LinearLayout recordlist_layout;
     ImageButton imgbtn_back, btn_share;
     TextView tv_back, tv_untitled, tv_date, tv_used_wh, tv_dist_km, tv_avrpwr_w;
-    LogGraph graph_log;
+    static LogGraph graph_log;
 
     DBHelper dbHelper;
     static Map dataMap = new HashMap();
@@ -166,40 +168,68 @@ public class TripLogActivity extends AppCompatActivity {
             }
         });
 
-        setTripInfo();
-        getTripListInfo();
+        if (dbHelper.getProfileCount("TripLogTable") > 0) {
+            setTripInfo(999);
+            getTripListInfo();
+        }
     }
 
-    private void setTripInfo() {
-        boolean isCurrent = false;
-        int tripLogTableLastId = dbHelper.getTripLogTableLastId();
-        if (TABLE_ID == tripLogTableLastId) {
-            isCurrent = true;
-        } else if (TABLE_ID == -1) {
-            //마지막 트립 불러오기
-            TABLE_ID = tripLogTableLastId;
+    static public void showCurrentTrip(DBHelper dbHelper) {
+        //TODO: 실시간 Current 그래프 그리기!! time.sleep(1000)으로 invalidate();
+        if (ConsumptionActivity.thread.isAlive()) {
+            // 수행할 작업
+            graph_log.map = dbHelper.getTripLogW(dataMap, -1);
+
+            if (graph_log != null) {
+                graph_log.invalidate();
+            }
+        }
+    }
+
+    private void setTripInfo(int tableId) {
+        if (tableId == 999) {
+            if (!ConsumptionActivity.thread.isAlive()) {
+                //TODO: 마지막으로 저장된 최신 트립 불러오기
+                //마지막 트립 불러오기
+                int tripLogTableLastId = dbHelper.getTripLogTableLastId();
+                tableId = tripLogTableLastId;
+            } else {
+                if (ConsumptionActivity.thread.isInterrupted()) {
+                    showTripReviseDialog();
+                }
+                return; }
         }
 
-        graph_log.map = dbHelper.getTripLogW(dataMap, TABLE_ID);
-        graph_log.maxW = dbHelper.getMaxW(TABLE_ID);
-        graph_log.invalidate();
+        graph_log.maxW = dbHelper.getMaxW(tableId);
+        if (graph_log.maxW != -1) {
+            graph_log.map = dbHelper.getTripLogW(dataMap, tableId);
+            graph_log.invalidate();
 
-        Map tripSTATSmap = dbHelper.getTripSTATSbyID(TABLE_ID);
-        String tripName = (String) tripSTATSmap.get("NAME");
-        String tripDateTime = (String) tripSTATSmap.get("DATE");
-        String[] s = tripDateTime.split(" ");
-        String tripDate = s[0];
-        //if (isCurrent) { tripDate += " (CURRENT)"; }
-        int usedWh = (int) tripSTATSmap.get("USED");
-        int dist = (int) tripSTATSmap.get("DIST");
-        double ddist = dist * 0.01;
-        int avrpwr = (int) tripSTATSmap.get("AVRPWR");
+            Map tripSTATSmap = dbHelper.getTripSTATSbyID(tableId);
+            String tripName = (String) tripSTATSmap.get("NAME");
+            String tripDateTime = (String) tripSTATSmap.get("DATE");
+            String[] s = tripDateTime.split(" ");
+            String tripDate = s[0];
+            //if (isCurrent) { tripDate += " (CURRENT)"; }
+            int usedWh = (int) tripSTATSmap.get("USED");
+            int dist = (int) tripSTATSmap.get("DIST");
+            double ddist = dist * 0.01;
+            int avrpwr = (int) tripSTATSmap.get("AVRPWR");
 
-        tv_untitled.setText(tripName);
-        tv_date.setText(tripDate);
-        tv_used_wh.setText(usedWh + "Wh");
-        tv_dist_km.setText(ddist + "KM");
-        tv_avrpwr_w.setText(avrpwr + "W");
+            tv_untitled.setText(tripName);
+            tv_date.setText(tripDate);
+            tv_used_wh.setText(usedWh + "Wh");
+            tv_dist_km.setText(ddist + "KM");
+            tv_avrpwr_w.setText(avrpwr + "W");
+        } else {
+            graph_log.setVisibility(View.INVISIBLE);
+
+            tv_untitled.setText("Untitled");
+            tv_date.setText("----.--.--");
+            tv_used_wh.setText("--Wh");
+            tv_dist_km.setText("--KM");
+            tv_avrpwr_w.setText("--W");
+        }
     }
 
     private void getTripListInfo() {
@@ -231,6 +261,8 @@ public class TripLogActivity extends AppCompatActivity {
                     String[] s = tripDateTime.split(" ");
                     tripDate = s[0];
 
+                    if (tripDate.equals("null")) continue;
+
                     View customView = layoutInflater.inflate(R.layout.custom_record_info, null);
                     ((LinearLayout) customView.findViewById(R.id.container)).setTag(tripID + "");
                     ((TextView) customView.findViewById(R.id.tv_name)).setText(tripName);
@@ -249,7 +281,7 @@ public class TripLogActivity extends AppCompatActivity {
     public void onClickRecord(View view) {
         TABLE_ID = Integer.parseInt(view.getTag().toString());
 
-        setTripInfo();
+        setTripInfo(TABLE_ID);
     }
 
     private Bitmap getBitmapFromView(View view, int height, int width) {
@@ -306,6 +338,79 @@ public class TripLogActivity extends AppCompatActivity {
         dig.setCancelable(false);
         dig.show();
 
+    }
+
+    public void showSaveTripDialog(int tripLogId, String nowTime) {
+        View dialogView = (View) View.inflate(
+                getApplicationContext(), R.layout.dialog_savetrip, null);
+        AlertDialog.Builder dig = new AlertDialog.Builder(getApplicationContext(), R.style.Theme_Dialog);
+        dig.setView(dialogView);
+        dig.setTitle("Save this trip!");
+
+        if ( getApplicationContext().equals(TripLogActivity.this) ) {
+            Toast.makeText(getApplicationContext(), "한글, 영문, 숫자만 입력 가능합니다.", Toast.LENGTH_SHORT).show();
+        }
+        final EditText editText = (EditText) dialogView.findViewById(R.id.editText_tripTitle);
+        editText.setFilters(new InputFilter[]{new InputFilter() {
+            @Override
+            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+                Pattern ps = Pattern.compile("^[a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ :()_+]+$");
+                if (source.equals("") || ps.matcher(source).matches()) {
+                    return source;
+                }
+                return "";
+            }
+        }});
+
+        dig.setNegativeButton("Cancel", null);
+        dig.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                tripName = String.valueOf(editText.getText());
+
+                // 트립 저장
+                int tripLogTableId = dbHelper.getTripLogTableLastId() + 1;
+
+                dbHelper.insert_TripLogTable(tripLogTableId, tripLogId);
+                dbHelper.insertTripLogTableLastId();
+
+                String allTripLogTable = dbHelper.getTripLogTable();
+                System.out.println(allTripLogTable);
+
+                int tripSTATSId = dbHelper.getTripSTATSLastId() + 1;
+
+                if (tripName == null) { tripName = "Untitled"; }
+                dbHelper.insert_TripSTATS(tripSTATSId, tripName, nowTime, dbHelper.getMaxW(tripSTATSId), dbHelper.getUsedW(tripSTATSId), 2150, dbHelper.getAvgPwrW(tripSTATSId));
+                dbHelper.insertTripSTATSLastId();
+
+                Toast.makeText(getApplicationContext(), "트립이 저장되었습니다.", Toast.LENGTH_SHORT).show();
+
+                String allTrip = dbHelper.getTripSTATS();
+                System.out.println(allTrip);
+
+
+                // Trip 기록 개수 20개 넘으면 자동 삭제
+                if (tripLogTableId + 1 > 20) {
+                    long count;
+                    for (int id = 1; id < tripLogTableId; id++) {
+
+                        dbHelper.deleteTrip(id);
+                        count = dbHelper.getProfileCount("TripLogTable");
+
+                        dbHelper.insertTripLogLastId();
+                        dbHelper.insertTripLogTableLastId();
+                        dbHelper.insertTripSTATSLastId();
+
+                        if (count < 20) { break; }
+                    }
+                }
+
+            }
+        });
+
+        dig.setCancelable(false);
+        dig.show();
     }
 
     private String getNowTime() {

@@ -29,7 +29,7 @@ public class LogGraph extends View {
     static int n = 0, m = 0;  // 카테고리 개수
     static float max, min;
     static int maxW;
-    final static int DEFINED_MAX_W = 750;
+    final static int DEFINED_MAX_W = 750;  // 버그 - 650에서 그래프 상단에 닿음. -> adjustY를 +100 낮추자.
 
     public LogGraph(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -85,24 +85,36 @@ public class LogGraph extends View {
 
         Paint pathPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         pathPaint.setStyle(Paint.Style.FILL);
-        LinearGradient linearGradient = new LinearGradient(200, 300, 200, 600, Color.rgb(235, 0, 0), Color.BLACK, Shader.TileMode.CLAMP);
+        pathPaint.setAntiAlias(true);
+        pathPaint.setStrokeJoin(Paint.Join.ROUND);
+        pathPaint.setStrokeCap(Paint.Cap.ROUND);
+        pathPaint.setDither(true);
+        int y0;
+        if (maxW > 500) { y0 = 400; }
+        else if (maxW > 300) { y0 = 450; }
+        else if (maxW > 100) { y0 = 500; }
+        else { y0 = 550; }
+        LinearGradient linearGradient = new LinearGradient(200, y0, 200, 600, Color.rgb(235, 0, 0), Color.BLACK, Shader.TileMode.CLAMP);
         pathPaint.setShader(linearGradient);
 
         Paint pathStrokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         pathStrokePaint.setStyle(Paint.Style.STROKE);
         pathStrokePaint.setColor(Color.WHITE);
         pathStrokePaint.setStrokeWidth(5f);
+        pathStrokePaint.setAntiAlias(true);
+        pathStrokePaint.setStrokeJoin(Paint.Join.ROUND);
+        pathStrokePaint.setStrokeCap(Paint.Cap.ROUND);
+        pathStrokePaint.setDither(true);
 
         Path p = new Path();
         p.setFillType(EVEN_ODD);
 
-
         float adjustC = 0.5f * DEFINED_MAX_W;
-        int adjustY = 230;
+        int adjustY = 330;  // 버그 잡기 위해 230에서 330으로 수정
 
         p.moveTo(210, getHeight() - 40);
         //p.moveTo(firstDotX, bottom - (value.get(0) * max / adjustC) + adjustY);
-        p.lineTo(firstDotX, bottom - (0 * max / adjustC) + adjustY);
+        p.lineTo(firstDotX, bottom - (0 * max / adjustC) + adjustY);  //TODO: 0일 때 0이 나오도록 수정해야함!!!!!
         for (int i = 0; i < n; i++) {
             // 꼭짓점 그리기
             //canvas.drawCircle(firstDotX + dotDistance * i, bottom - (value.get(i) * max / adjustC) + adjustY, 5, dotPaint);
