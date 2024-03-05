@@ -44,7 +44,7 @@ public class LogGraph extends View {
         //map = ConsumptionActivity.dataMap;
 
         // 데이터가 비어있으면 그래프를 그릴 수 없다.
-        if (map.size() == 0) {
+        if (map == null || map.size() == 0) {
             System.out.println("!!! map size is 0.");
             return;
         }

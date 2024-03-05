@@ -48,6 +48,13 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="20dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/imgbtn_back">
     <TextView
         android:id="@+id/tv_untitled"
         android:layout_width="wrap_content"
@@ -61,7 +68,7 @@
         android:textSize="40sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/imgbtn_back" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/tv_date"
@@ -249,7 +256,7 @@
             android:textStyle="bold" />
 
     </LinearLayout>
-
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <include layout="@layout/content_recordlist" />
 

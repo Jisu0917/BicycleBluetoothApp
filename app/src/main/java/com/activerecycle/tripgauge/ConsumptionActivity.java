@@ -17,20 +17,27 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.view.View;
+import android.view.animation.Animation;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.regex.Pattern;
 
 public class ConsumptionActivity extends AppCompatActivity {
+    static String EXTERNAL_STORAGE_PATH = "";
 
     // 앱에서 디바이스에게 주는 데이터
     int speed = 0;
@@ -58,6 +65,17 @@ public class ConsumptionActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_consumption);
+
+        // For Record Activity
+        String state = Environment.getExternalStorageState();
+        if (!state.equals(Environment.MEDIA_MOUNTED)) {
+            Toast.makeText(getApplicationContext(), "외장 메모리가 마운트 되지 않았습니다.", Toast.LENGTH_LONG).show();
+        } else {
+            EXTERNAL_STORAGE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath();
+        }
+
+        checkDangerousPermissions();
+
 
         dbHelper = new DBHelper(ConsumptionActivity.this, 1);
 
@@ -186,14 +204,11 @@ public class ConsumptionActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                //dbHelper.deleteTable("TripLog");  //TripLog 테이블 초기화
                 while (true) {
                     // 수행할 작업
                     mNow[0] = System.currentTimeMillis();
                     mDate[0] = new Date(mNow[0]);
                     String nowTime = mFormat.format(mDate[0]);
-
-                    long tripLogCount = dbHelper.getProfilesCount("TripLog");
 
                     // W 표시
                     /*
@@ -205,13 +220,18 @@ public class ConsumptionActivity extends AppCompatActivity {
                     tv_w.setText(volt * amp + "W");
                     tv_w.invalidate();
 
-                    dbHelper.insert_TripLog((int) tripLogCount, nowTime, volt, amp);
+                    int tripLogId = dbHelper.getTripLogLastId() + 1;
 
+                    //dbHelper.printTablesCounts();
+
+                    dbHelper.insert_TripLog(tripLogId, nowTime, volt, amp);
                     String allLog = dbHelper.getLog();
-                    //System.out.println(allLog);
+                    System.out.println(allLog);
+                    dbHelper.insertTripLogLastId();
+
 
                     try {
-                        Thread.sleep(5000);
+                        Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -223,7 +243,7 @@ public class ConsumptionActivity extends AppCompatActivity {
                         mHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                showSaveTripDialog((int) tripLogCount, nowTime);
+                                showSaveTripDialog(tripLogId, nowTime);
                             }
                         }, 0);
 
@@ -245,33 +265,102 @@ public class ConsumptionActivity extends AppCompatActivity {
         dig.setView(dialogView);
         dig.setTitle("Save this trip!");
 
-        final EditText editText = (EditText) dialogView.findViewById(R.id.editText_tripTitle);
+        Toast.makeText(getApplicationContext(), "한글, 영문, 숫자만 입력 가능합니다.", Toast.LENGTH_SHORT).show();
 
-        dig.setNegativeButton("취소", null);
-        dig.setPositiveButton("확인", new DialogInterface.OnClickListener() {
+        final EditText editText = (EditText) dialogView.findViewById(R.id.editText_tripTitle);
+        editText.setFilters(new InputFilter[]{new InputFilter() {
+            @Override
+            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+                Pattern ps = Pattern.compile("^[a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ \\u318D\\u119E\\u11A2\\u2022\\u2025a\\u00B7\\uFE55]+$");
+                if (source.equals("") || ps.matcher(source).matches()) {
+                    return source;
+                }
+                return "";
+            }
+        }});
+
+        dig.setNegativeButton("Cancel", null);
+        dig.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
                 tripName = String.valueOf(editText.getText());
 
                 // 트립 저장
-                long tripLogTableCount = dbHelper.getProfilesCount("TripLogTable");
+                int tripLogTableId = dbHelper.getTripLogTableLastId() + 1;
 
-                dbHelper.insert_TripLogTable((int) tripLogTableCount, (int) tripLogCount);
+                dbHelper.insert_TripLogTable(tripLogTableId, tripLogCount);
+                dbHelper.insertTripLogTableLastId();
+
                 String allTripLogTable = dbHelper.getTripLogTable();
                 System.out.println(allTripLogTable);
 
-                long tripCount = dbHelper.getProfilesCount("TripSTATS");
+                int tripCount = dbHelper.getTripSTATSLastId();
 
                 if (tripName == null) { tripName = "Untitled"; }
-                dbHelper.insert_TripSTATS((int) tripCount, tripName, nowTime, dbHelper.getMaxW((int) tripLogTableCount), dbHelper.getUsedW((int) tripLogTableCount), 2150, dbHelper.getAvgPwrW((int) tripLogTableCount));
+                dbHelper.insert_TripSTATS((int) tripCount, tripName, nowTime, dbHelper.getMaxW((int) tripLogTableId), dbHelper.getUsedW((int) tripLogTableId), 2150, dbHelper.getAvgPwrW((int) tripLogTableId));
+                dbHelper.insertTripSTATSLastId();
 
                 String allTrip = dbHelper.getTripSTATS();
                 System.out.println(allTrip);
+
+
+                // Trip 기록 개수 20개 넘으면 자동 삭제
+                if (tripLogTableId + 1 > 20) {
+                    long count;
+                    for (int id = 1; id < tripLogTableId; id++) {
+
+                        dbHelper.deleteTrip(id);
+                        count = dbHelper.getProfileCount("TripLogTable");
+
+                        dbHelper.insertTripLogLastId();
+                        dbHelper.insertTripLogTableLastId();
+                        dbHelper.insertTripSTATSLastId();
+
+                        if (count < 20) { break; }
+                    }
+                }
+
             }
         });
 
         dig.setCancelable(false);
         dig.show();
+    }
+
+    private void checkDangerousPermissions() {
+        String[] permissions = new String[0];
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            permissions = new String[] {
+                    Manifest.permission.MANAGE_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.INTERNET,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            };
+        } else {
+            permissions = new String[] {
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.INTERNET,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            };
+        }
+
+        int permissionCheck = PackageManager.PERMISSION_GRANTED;
+        for (String permission : permissions) {
+            permissionCheck = ContextCompat.checkSelfPermission(this, permission);
+            if (permissionCheck == PackageManager.PERMISSION_DENIED) {
+                break;
+            }
+        }
+
+        if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "권한 있음", Toast.LENGTH_SHORT).show();
+        } else {
+            ActivityCompat.requestPermissions(this, permissions, 1);
+        }
     }
 }
