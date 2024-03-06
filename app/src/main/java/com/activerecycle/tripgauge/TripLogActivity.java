@@ -168,10 +168,13 @@ public class TripLogActivity extends AppCompatActivity {
             }
         });
 
-        if (dbHelper.getProfileCount("TripLogTable") > 0) {
-            setTripInfo(999);
-            getTripListInfo();
-        }
+        setTripInfo(999);
+        getTripListInfo();
+
+//        if (dbHelper.getProfileCount("TripLogTable") > 0) {
+//            setTripInfo(999);
+//            getTripListInfo();
+//        }
     }
 
     static public void showCurrentTrip(DBHelper dbHelper) {
@@ -195,7 +198,12 @@ public class TripLogActivity extends AppCompatActivity {
                 tableId = tripLogTableLastId;
             } else {
                 if (ConsumptionActivity.thread.isInterrupted()) {
-                    showTripReviseDialog();
+                    long mNow = System.currentTimeMillis();
+                    Date mDate = new Date(mNow);
+                    SimpleDateFormat mFormat = new SimpleDateFormat("yyyy.MM.dd hh:mm:ss");
+                    mFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
+                    String nowTime = mFormat.format(mDate);
+                    showSaveTripDialog(dbHelper.getTripLogLastId() + 1, nowTime);
                 }
                 return; }
         }
@@ -303,7 +311,7 @@ public class TripLogActivity extends AppCompatActivity {
         dig.setView(dialogView);
         dig.setTitle("Revise this trip title!");
 
-        Toast.makeText(getApplicationContext(), "한글, 영문, 숫자만 입력 가능합니다.", Toast.LENGTH_LONG).show();
+        Toast.makeText(TripLogActivity.this, "한글, 영문, 숫자만 입력 가능합니다.", Toast.LENGTH_LONG).show();
 
         final EditText editText = (EditText) dialogView.findViewById(R.id.editText_tripTitle);
         editText.setFilters(new InputFilter[]{new InputFilter() {
@@ -340,10 +348,10 @@ public class TripLogActivity extends AppCompatActivity {
 
     }
 
-    public void showSaveTripDialog(int tripLogId, String nowTime) {
+    private void showSaveTripDialog(int tripLogId, String nowTime) {
         View dialogView = (View) View.inflate(
-                getApplicationContext(), R.layout.dialog_savetrip, null);
-        AlertDialog.Builder dig = new AlertDialog.Builder(getApplicationContext(), R.style.Theme_Dialog);
+                TripLogActivity.this, R.layout.dialog_savetrip, null);
+        AlertDialog.Builder dig = new AlertDialog.Builder(TripLogActivity.this, R.style.Theme_Dialog);
         dig.setView(dialogView);
         dig.setTitle("Save this trip!");
 

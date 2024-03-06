@@ -7,20 +7,15 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.LinearGradient;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.RectF;
 import android.graphics.Shader;
-import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.View;
 
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
 import java.util.Map;
 
 public class LogGraph extends View {
@@ -30,6 +25,8 @@ public class LogGraph extends View {
     static float max, min;
     static int maxW;
     final static int DEFINED_MAX_W = 750;  // 버그 - 650에서 그래프 상단에 닿음. -> adjustY를 +100 낮추자.
+    int bottom, adjustY;
+    float adjustC;
 
     public LogGraph(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -72,12 +69,17 @@ public class LogGraph extends View {
         }
 
         final int top = 150;
-        final int bottom = getHeight() -550;
+        bottom = getHeight() -550;
         final int margin = 150;
         m = n;
         final int dotDistance = (getWidth() - 2*margin) / m;  // 간격 개수 m - 1, 시작끝 좌우여백
         //final int dotDistance = 10;
         final int firstDotX = 80 + margin + dotDistance/2;
+
+
+        adjustC = 0.6f * DEFINED_MAX_W;  // 0.5f에서 0.6f로 수정 -> C로 나누기 때문에 C가 커질수록 그래프가 높아진다.
+        adjustY = 330;  // 버그 잡기 위해 230에서 330으로 수정
+
 
         Paint dotPaint = new Paint();
         dotPaint.setColor(Color.WHITE);
@@ -89,12 +91,14 @@ public class LogGraph extends View {
         pathPaint.setStrokeJoin(Paint.Join.ROUND);
         pathPaint.setStrokeCap(Paint.Cap.ROUND);
         pathPaint.setDither(true);
-        int y0;
-        if (maxW > 500) { y0 = 400; }
-        else if (maxW > 300) { y0 = 450; }
-        else if (maxW > 100) { y0 = 500; }
-        else { y0 = 550; }
-        LinearGradient linearGradient = new LinearGradient(200, y0, 200, 600, Color.rgb(235, 0, 0), Color.BLACK, Shader.TileMode.CLAMP);
+
+        System.out.println("getHeight(): " + getHeight());  //700
+        float y0;
+        if (maxW > 500) { y0 = getHeight()*0.57f; }  //400
+        else if (maxW > 300) { y0 = getHeight()*0.64f; }  //450
+        else if (maxW > 100) { y0 = getHeight()*0.71f; }  //500
+        else { y0 = getHeight()*0.78f; }  //550
+        LinearGradient linearGradient = new LinearGradient(200, y0, 200, getHeight()*0.85f, Color.rgb(235, 0, 0), Color.BLACK, Shader.TileMode.CLAMP);
         pathPaint.setShader(linearGradient);
 
         Paint pathStrokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -108,9 +112,6 @@ public class LogGraph extends View {
 
         Path p = new Path();
         p.setFillType(EVEN_ODD);
-
-        float adjustC = 0.5f * DEFINED_MAX_W;
-        int adjustY = 330;  // 버그 잡기 위해 230에서 330으로 수정
 
         p.moveTo(210, getHeight() - 40);
         //p.moveTo(firstDotX, bottom - (value.get(0) * max / adjustC) + adjustY);
@@ -171,6 +172,9 @@ public class LogGraph extends View {
         // Consumption Log 글씨 넣기
         txtPaint.setTextSize(60f);
         canvas.drawText("CONSUMPTION LOG", getWidth() - 80, 180, txtPaint);
+    }
 
+    private float getPointY(float y) {
+        return bottom - (y * max / adjustC) + adjustY;
     }
 }

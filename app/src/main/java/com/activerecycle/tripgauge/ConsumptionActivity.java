@@ -1,12 +1,12 @@
 package com.activerecycle.tripgauge;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -250,6 +250,7 @@ public class ConsumptionActivity extends AppCompatActivity {
                         }, 0);
 
 
+                        thread.interrupt();
                         break;
                     }
 
@@ -261,10 +262,10 @@ public class ConsumptionActivity extends AppCompatActivity {
         
     }
 
-    public void showSaveTripDialog(int tripLogId, String nowTime) {
+    private void showSaveTripDialog(int tripLogId, String nowTime) {
         View dialogView = (View) View.inflate(
-                getApplicationContext(), R.layout.dialog_savetrip, null);
-        AlertDialog.Builder dig = new AlertDialog.Builder(getApplicationContext(), R.style.Theme_Dialog);
+                ConsumptionActivity.this, R.layout.dialog_savetrip, null);
+        AlertDialog.Builder dig = new AlertDialog.Builder(ConsumptionActivity.this, R.style.Theme_Dialog);
         dig.setView(dialogView);
         dig.setTitle("Save this trip!");
 
