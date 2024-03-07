@@ -46,7 +46,7 @@ public class TripLogActivity extends AppCompatActivity {
     ConstraintLayout container;
     LinearLayout recordlist_layout;
     ImageButton imgbtn_back, btn_share;
-    TextView tv_back, tv_untitled, tv_date, tv_used_wh, tv_dist_km, tv_avrpwr_w;
+    static TextView tv_back, tv_untitled, tv_date, tv_used_wh, tv_dist_km, tv_avrpwr_w;
     static LogGraph graph_log;
 
     DBHelper dbHelper;
@@ -177,7 +177,7 @@ public class TripLogActivity extends AppCompatActivity {
 //        }
     }
 
-    static public void showCurrentTrip(DBHelper dbHelper) {
+    public void showCurrentTrip(DBHelper dbHelper) {
         //TODO: 실시간 Current 그래프 그리기!! time.sleep(1000)으로 invalidate();
         if (ConsumptionActivity.thread.isAlive()) {
             // 수행할 작업
@@ -185,6 +185,14 @@ public class TripLogActivity extends AppCompatActivity {
 
             if (graph_log != null) {
                 graph_log.invalidate();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        tv_used_wh.setText(LogGraph.usedW +"Wh");
+                        tv_avrpwr_w.setText(LogGraph.avrW + "W");
+                    }
+                });
+
             }
         }
     }
@@ -203,7 +211,8 @@ public class TripLogActivity extends AppCompatActivity {
                     SimpleDateFormat mFormat = new SimpleDateFormat("yyyy.MM.dd hh:mm:ss");
                     mFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
                     String nowTime = mFormat.format(mDate);
-                    showSaveTripDialog(dbHelper.getTripLogLastId() + 1, nowTime);
+                    //showSaveTripDialog(dbHelper.getTripLogLastId() + 1, nowTime);
+                    saveTrip(dbHelper.getTripLogLastId() + 1, nowTime);
                 }
                 return; }
         }
@@ -246,6 +255,8 @@ public class TripLogActivity extends AppCompatActivity {
         for (int i = tripLogTableLastId; i >= 1; i--) {
             statList.add(dbHelper.getTripSTATSbyID(i));
         }
+
+        System.out.println("**** statList : " + statList);
 
         setTripListView();
     }
@@ -419,6 +430,47 @@ public class TripLogActivity extends AppCompatActivity {
 
         dig.setCancelable(false);
         dig.show();
+    }
+
+    private void saveTrip(int tripLogId, String nowTime) {
+        // 트립 저장
+        int tripLogTableId = dbHelper.getTripLogTableLastId() + 1;
+
+        dbHelper.insert_TripLogTable(tripLogTableId, tripLogId);
+        dbHelper.insertTripLogTableLastId();
+
+        String allTripLogTable = dbHelper.getTripLogTable();
+        System.out.println(allTripLogTable);
+
+        int tripSTATSId = dbHelper.getTripSTATSLastId() + 1;
+
+        if (tripName == null) { tripName = "Untitled"; }
+        dbHelper.insert_TripSTATS(tripSTATSId, tripName, nowTime, dbHelper.getMaxW(tripSTATSId), dbHelper.getUsedW(tripSTATSId), 2150, dbHelper.getAvgPwrW(tripSTATSId));
+        dbHelper.insertTripSTATSLastId();
+
+        Toast.makeText(getApplicationContext(), "트립이 저장되었습니다.", Toast.LENGTH_SHORT).show();
+
+        getTripListInfo();
+
+        String allTrip = dbHelper.getTripSTATS();
+        System.out.println(allTrip);
+
+
+        // Trip 기록 개수 20개 넘으면 자동 삭제
+        if (tripLogTableId + 1 > 20) {
+            long count;
+            for (int id = 1; id < tripLogTableId; id++) {
+
+                dbHelper.deleteTrip(id);
+                count = dbHelper.getProfileCount("TripLogTable");
+
+                dbHelper.insertTripLogLastId();
+                dbHelper.insertTripLogTableLastId();
+                dbHelper.insertTripSTATSLastId();
+
+                if (count < 20) { break; }
+            }
+        }
     }
 
     private String getNowTime() {

@@ -8,16 +8,31 @@ import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ConnectionActivity extends AppCompatActivity {
 
     ImageButton btn_menu, btn_reload;
     Button btn_settings, btn_trip;
 
+    /*
+    * Log 그래프 확인 위한 코드 - 지우기!
+    * */
+    static Map dataMap = new HashMap();
+    static LogGraph graph_log;
+    DBHelper dbHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connection);
-        //setContentView(R.layout.tmplayout);
+//        /*
+//         * Log 그래프 확인 위한 코드 - 지우기!
+//         * */
+//        setContentView(R.layout.tmplayout);
+//        dbHelper = new DBHelper(ConnectionActivity.this, 1);
+//        graph_log.map = dbHelper.getTripLogW(dataMap, 3);
 
         btn_menu = (ImageButton) findViewById(R.id.btn_menu);
         btn_reload = (ImageButton) findViewById(R.id.btn_reload);

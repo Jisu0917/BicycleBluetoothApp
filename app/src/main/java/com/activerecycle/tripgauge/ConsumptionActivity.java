@@ -189,7 +189,7 @@ public class ConsumptionActivity extends AppCompatActivity {
         });
 
 
-
+        TripLogActivity tripLogActivity = new TripLogActivity();
 
 
         // 로그 db에 기록
@@ -230,7 +230,7 @@ public class ConsumptionActivity extends AppCompatActivity {
                     dbHelper.insertTripLogLastId();
 
 
-                    TripLogActivity.showCurrentTrip(dbHelper);
+                    tripLogActivity.showCurrentTrip(dbHelper);
 
                     try {
                         Thread.sleep(1000);
@@ -245,7 +245,8 @@ public class ConsumptionActivity extends AppCompatActivity {
                         mHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                showSaveTripDialog(tripLogId, nowTime);
+                                //showSaveTripDialog(tripLogId, nowTime);
+                                saveTrip(tripLogId, nowTime);
                             }
                         }, 0);
 
@@ -291,47 +292,52 @@ public class ConsumptionActivity extends AppCompatActivity {
 
                 tripName = String.valueOf(editText.getText());
 
-                // 트립 저장
-                int tripLogTableId = dbHelper.getTripLogTableLastId() + 1;
-
-                dbHelper.insert_TripLogTable(tripLogTableId, tripLogId);
-                dbHelper.insertTripLogTableLastId();
-
-                String allTripLogTable = dbHelper.getTripLogTable();
-                System.out.println(allTripLogTable);
-
-                int tripSTATSId = dbHelper.getTripSTATSLastId() + 1;
-
-                if (tripName == null) { tripName = "Untitled"; }
-                dbHelper.insert_TripSTATS(tripSTATSId, tripName, nowTime, dbHelper.getMaxW(tripSTATSId), dbHelper.getUsedW(tripSTATSId), 2150, dbHelper.getAvgPwrW(tripSTATSId));
-                dbHelper.insertTripSTATSLastId();
-
-                Toast.makeText(getApplicationContext(), "트립이 저장되었습니다.", Toast.LENGTH_SHORT).show();
-
-                String allTrip = dbHelper.getTripSTATS();
-                System.out.println(allTrip);
-
-
-                // Trip 기록 개수 20개 넘으면 자동 삭제
-                if (tripLogTableId + 1 > 20) {
-                    long count;
-                    for (int id = 1; id < tripLogTableId; id++) {
-
-                        dbHelper.deleteTrip(id);
-                        count = dbHelper.getProfileCount("TripLogTable");
-
-                        dbHelper.insertTripLogLastId();
-                        dbHelper.insertTripLogTableLastId();
-                        dbHelper.insertTripSTATSLastId();
-
-                        if (count < 20) { break; }
-                    }
-                }
+                saveTrip(tripLogId, nowTime);
 
             }
         });
 
         dig.setCancelable(false);
         dig.show();
+    }
+
+
+    private void saveTrip(int tripLogId, String nowTime) {
+        // 트립 저장
+        int tripLogTableId = dbHelper.getTripLogTableLastId() + 1;
+
+        dbHelper.insert_TripLogTable(tripLogTableId, tripLogId);
+        dbHelper.insertTripLogTableLastId();
+
+        String allTripLogTable = dbHelper.getTripLogTable();
+        System.out.println(allTripLogTable);
+
+        int tripSTATSId = dbHelper.getTripSTATSLastId() + 1;
+
+        if (tripName == null) { tripName = "Untitled"; }
+        dbHelper.insert_TripSTATS(tripSTATSId, tripName, nowTime, dbHelper.getMaxW(tripSTATSId), dbHelper.getUsedW(tripSTATSId), 2150, dbHelper.getAvgPwrW(tripSTATSId));
+        dbHelper.insertTripSTATSLastId();
+
+        Toast.makeText(getApplicationContext(), "트립이 저장되었습니다.", Toast.LENGTH_SHORT).show();
+
+        String allTrip = dbHelper.getTripSTATS();
+        System.out.println(allTrip);
+
+
+        // Trip 기록 개수 20개 넘으면 자동 삭제
+        if (tripLogTableId + 1 > 20) {
+            long count;
+            for (int id = 1; id < tripLogTableId; id++) {
+
+                dbHelper.deleteTrip(id);
+                count = dbHelper.getProfileCount("TripLogTable");
+
+                dbHelper.insertTripLogLastId();
+                dbHelper.insertTripLogTableLastId();
+                dbHelper.insertTripSTATSLastId();
+
+                if (count < 20) { break; }
+            }
+        }
     }
 }

@@ -23,9 +23,11 @@ public class LogGraph extends View {
     static Map map;
     static int n = 0, m = 0;  // 카테고리 개수
     static float max, min;
-    static int maxW;
+    static int maxW, usedW, avrW, sumW;
     final static int DEFINED_MAX_W = 750;  // 버그 - 650에서 그래프 상단에 닿음. -> adjustY를 +100 낮추자.
-    int bottom, adjustY;
+    int top, bottom, adjustY;
+    int TOP, BOTTOM;
+
     float adjustC;
 
     public LogGraph(Context context, @Nullable AttributeSet attrs) {
@@ -38,7 +40,10 @@ public class LogGraph extends View {
         canvas.drawColor(Color.BLACK);
 
         map = TripLogActivity.dataMap;  // - 그래프 확인을 위해 주석 처리 해둠.
-        //map = ConsumptionActivity.dataMap;
+//        /*
+//         * Log 그래프 확인 위한 코드 - 지우기!
+//         * */
+//        map = ConnectionActivity.dataMap;
 
         // 데이터가 비어있으면 그래프를 그릴 수 없다.
         if (map == null || map.size() == 0) {
@@ -50,6 +55,16 @@ public class LogGraph extends View {
         n = original_wList.size();
 
         System.out.println("@@@@@ original_wList : " + original_wList);
+
+        usedW = original_wList.get(0) - original_wList.get(n-1);
+        if (usedW < 0) { usedW = -usedW; }
+        maxW = original_wList.get(0);
+        sumW = 0;
+        for (int i=1; i < n; i++) {
+            if (original_wList.get(i) > maxW) maxW = original_wList.get(i);;
+            sumW += original_wList.get(i);
+        }
+        avrW = sumW / n;
 
         ArrayList<Float> value = new ArrayList<>();
         float fitC = 0.5f;
@@ -68,8 +83,13 @@ public class LogGraph extends View {
             if (value.get(i) < min) min = value.get(i);
         }
 
-        final int top = 150;
+        top = 150;
         bottom = getHeight() -550;
+
+        // 흰색 사각형 틀 기준 탑, 바텀
+        TOP = 100;
+        BOTTOM = getHeight() - 40;
+
         final int margin = 150;
         m = n;
         final int dotDistance = (getWidth() - 2*margin) / m;  // 간격 개수 m - 1, 시작끝 좌우여백
@@ -92,7 +112,6 @@ public class LogGraph extends View {
         pathPaint.setStrokeCap(Paint.Cap.ROUND);
         pathPaint.setDither(true);
 
-        System.out.println("getHeight(): " + getHeight());  //700
         float y0;
         if (maxW > 500) { y0 = getHeight()*0.57f; }  //400
         else if (maxW > 300) { y0 = getHeight()*0.64f; }  //450
@@ -100,6 +119,7 @@ public class LogGraph extends View {
         else { y0 = getHeight()*0.78f; }  //550
         LinearGradient linearGradient = new LinearGradient(200, y0, 200, getHeight()*0.85f, Color.rgb(235, 0, 0), Color.BLACK, Shader.TileMode.CLAMP);
         pathPaint.setShader(linearGradient);
+
 
         Paint pathStrokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         pathStrokePaint.setStyle(Paint.Style.STROKE);
@@ -114,19 +134,18 @@ public class LogGraph extends View {
         p.setFillType(EVEN_ODD);
 
         p.moveTo(210, getHeight() - 40);
-        //p.moveTo(firstDotX, bottom - (value.get(0) * max / adjustC) + adjustY);
-        p.lineTo(firstDotX, bottom - (0 * max / adjustC) + adjustY);  //TODO: 0일 때 0이 나오도록 수정해야함!!!!!
+        p.lineTo(firstDotX, getPointY(0));
         for (int i = 0; i < n; i++) {
             // 꼭짓점 그리기
             //canvas.drawCircle(firstDotX + dotDistance * i, bottom - (value.get(i) * max / adjustC) + adjustY, 5, dotPaint);
 
             // "이전 꼭짓점"과 연결해주는 선 그리기
             if (i > 0) {
-                p.lineTo(firstDotX + dotDistance * (i-1), bottom - (value.get(i-1) * max / adjustC) + adjustY);
+                p.lineTo(firstDotX + dotDistance * (i-1), getPointY(value.get(i-1)));
             }
 
         }
-        p.lineTo(firstDotX + dotDistance * (n-1), bottom - (value.get(n-1) * max / adjustC) + adjustY);
+        p.lineTo(firstDotX + dotDistance * (n-1), getPointY(value.get(n-1)));
         p.lineTo((getWidth() - 60), (getHeight() - 40));
         //p.close();
         canvas.drawPath(p, pathPaint);
@@ -140,7 +159,7 @@ public class LogGraph extends View {
         paint.setColor(Color.WHITE);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(4f);
-        canvas.drawRoundRect(200, 100, getWidth() - 60, getHeight() - 40, 25f, 25f, paint);
+        canvas.drawRoundRect(200, TOP, getWidth() - 60, BOTTOM, 25f, 25f, paint);
 
         // 0 그리기
         Paint txtPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -150,7 +169,7 @@ public class LogGraph extends View {
         canvas.drawText("0", 150, getHeight() - 50, txtPaint);
 
         // 최댓값 숫자
-        canvas.drawText(maxW + "", 150, bottom - (max * max / adjustC) + adjustY, txtPaint);
+        canvas.drawText(maxW + "", 150, getPointY(max), txtPaint);
 
         // 최댓값 점선
         Paint linePaint = new Paint();
@@ -163,8 +182,8 @@ public class LogGraph extends View {
         Path path = new Path();
         for (int i = 0; i < n; i++) {
             if (value.get(i) == max) {
-                path.moveTo(200, bottom - (value.get(i) * max / adjustC) + adjustY);
-                path.lineTo(firstDotX + dotDistance * i, bottom - (value.get(i) * max / adjustC) + adjustY);
+                path.moveTo(200, getPointY(max));
+                path.lineTo(firstDotX + dotDistance * i, getPointY(max));
             }
         }
         canvas.drawPath(path, linePaint);
@@ -175,6 +194,12 @@ public class LogGraph extends View {
     }
 
     private float getPointY(float y) {
-        return bottom - (y * max / adjustC) + adjustY;
+        adjustY = 0;
+        adjustC = 0.9f;
+        //return bottom - (y * max / adjustC) + adjustY;  //
+        // barLength = (bottom - top) * v / max;
+        if (y == 0) return BOTTOM;
+        return BOTTOM - ( ( BOTTOM - TOP ) * (y / max) * adjustC);
+        //return bottom - ((y/max)*(maxW/DEFINED_MAX_W)) * adjustC;  // bottom - 0 = bottom.
     }
 }
