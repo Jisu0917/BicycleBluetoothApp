@@ -25,6 +25,8 @@ public class MainActivity extends AppCompatActivity {
         String[] permissions = new String[0];
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
             permissions = new String[] {
+                    Manifest.permission.BLUETOOTH,
+                    Manifest.permission.BLUETOOTH_ADMIN,
                     Manifest.permission.MANAGE_EXTERNAL_STORAGE,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE,
                     Manifest.permission.READ_EXTERNAL_STORAGE,

@@ -21,96 +21,95 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        /*
-         * 1. AUTOINCREMENT 설정은 시작한다. - tableId, logId, tripId 및 rowid 해당
-         * 2. Trip 한 회당 TripLogTable 1개, TripSTATS 1개.
-         * */
-        db.execSQL("CREATE TABLE TripLogTable ( tableId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, logLastId INTEGER )");
-        db.execSQL("CREATE TABLE TripLog( logId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, time TEXT, volt INTEGER, amp INTEGER, w INTEGER )");
-        db.execSQL("CREATE TABLE TripSTATS( tripId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT , date DATE not null, max_w INTEGER, used INTEGER, dist INTEGER, avrpwr INTEGER )");
-
-        /*
-        * 각 테이블의 마지막 Id를 기록한다.
-        * */
-        db.execSQL("CREATE TABLE TripLogTableLastId ( rowid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, lastId INTEGER DEFAULT -1 )");
-        db.execSQL("CREATE TABLE TripLogLastId ( rowid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, lastId INTEGER DEFAULT -1 )");
-        db.execSQL("CREATE TABLE TripSTATSLastId ( rowid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, lastId INTEGER DEFAULT -1 )");
+        db.execSQL("CREATE TABLE TripLog( logId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, tripId INTEGER not null, time TEXT, volt INTEGER, amp INTEGER, w INTEGER )");
+        db.execSQL("CREATE TABLE TripSTATS( tripId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT , date DATE , max_w INTEGER, used INTEGER, dist INTEGER, avrpwr INTEGER )");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int i, int i1) {
-        db.execSQL("DROP TABLE IF EXISTS TripLogTable");
         db.execSQL("DROP TABLE IF EXISTS TripLog");
         db.execSQL("DROP TABLE IF EXISTS TripSTATS");
     }
 
-    public void insertTripLogTableLastId() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT MAX(tableId) FROM TripLogTable", null);
-        if (cursor != null && cursor.moveToFirst()) {
-            int lastId = cursor.getInt(0);
-            db.execSQL("INSERT INTO TripLogTableLastId ( lastId ) VALUES (" + lastId + ")");
-        } else {
-            System.out.println("##### insertTripLogTableLastId : Error 발생!");
-        }
-        cursor.close();
-        db.close();
-    }
-
-    public void insertTripLogLastId() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT MAX(logId) FROM TripLog", null);
-        if (cursor != null && cursor.moveToFirst()) {
-            int lastId = cursor.getInt(0);
-            db.execSQL("INSERT INTO TripLogLastId ( lastId ) VALUES (" + lastId + ")");
-        }
-        cursor.close();
-        db.close();
-    }
-
-    public void insertTripSTATSLastId() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT MAX(tripId) FROM TripSTATS", null);
-        if (cursor != null && cursor.moveToFirst()) {
-            int lastId = cursor.getInt(0);
-            db.execSQL("INSERT INTO TripSTATSLastId ( lastId ) VALUES (" + lastId + ")");
-        }
-        cursor.close();
-        db.close();
-    }
-
-
-    // TripLogTable Table 데이터 입력
-    public void insert_TripLogTable(int tableId, int logLastId) {
-        SQLiteDatabase db = getWritableDatabase();
-        //db.execSQL("INSERT INTO TripLogTable VALUES("+ tableId +", " + logLastId + ")");
-        db.execSQL("INSERT INTO TripLogTable (logLastId) VALUES(" + logLastId + ")");
-        db.close();
-    }
+//    public void insertTripLogTableLastId() {
+//        SQLiteDatabase db = this.getReadableDatabase();
+//        Cursor cursor = db.rawQuery("SELECT MAX(tableId) FROM TripLogTable", null);
+//        if (cursor != null && cursor.moveToFirst()) {
+//            int lastId = cursor.getInt(0);
+//            db.execSQL("INSERT INTO TripLogTableLastId ( lastId ) VALUES (" + lastId + ")");
+//        } else {
+//            System.out.println("##### insertTripLogTableLastId : Error 발생!");
+//        }
+//        cursor.close();
+//        db.close();
+//    }
+//
+//    public void insertTripLogLastId() {
+//        SQLiteDatabase db = this.getReadableDatabase();
+//        Cursor cursor = db.rawQuery("SELECT MAX(logId) FROM TripLog", null);
+//        if (cursor != null && cursor.moveToFirst()) {
+//            int lastId = cursor.getInt(0);
+//            db.execSQL("INSERT INTO TripLogLastId ( lastId ) VALUES (" + lastId + ")");
+//        }
+//        cursor.close();
+//        db.close();
+//    }
+//
+//    public void insertTripSTATSLastId() {
+//        SQLiteDatabase db = this.getReadableDatabase();
+//        Cursor cursor = db.rawQuery("SELECT MAX(tripId) FROM TripSTATS", null);
+//        if (cursor != null && cursor.moveToFirst()) {
+//            int lastId = cursor.getInt(0);
+//            db.execSQL("INSERT INTO TripSTATSLastId ( lastId ) VALUES (" + lastId + ")");
+//        }
+//        cursor.close();
+//        db.close();
+//    }
 
     // TripLog Table 데이터 입력
-    public void insert_TripLog(int id, String time, int volt, int amp) {
+    public void insert_TripLog(String time, int volt, int amp) {
         int w = volt * amp;
         SQLiteDatabase db = getWritableDatabase();
         //db.execSQL("INSERT INTO TripLog VALUES("+ id +", '" + time + "', " + volt + ", " + amp + ", " + w + ")");
-        db.execSQL("INSERT INTO TripLog (time, volt, amp, w) VALUES('" + time + "', " + volt + ", " + amp + ", " + w + ")");
-        db.close();
+        db.execSQL("INSERT INTO TripLog (tripId, time, volt, amp, w) VALUES(" + get_latestTripId() +", '" + time + "', " + volt + ", " + amp + ", " + w + ")");
+        if (db != null && db.isOpen()) db.close();
     }
 
     // TripSTATS Table 데이터 입력
-    public void insert_TripSTATS(int id, String name, String date, int max_w, int used, int dist, int avrpwr) {
+    public void update_TripSTATS(int tripId, String date, int max_w, int used, int dist, int avrpwr) {
         SQLiteDatabase db = getWritableDatabase();
         //db.execSQL("INSERT INTO TripSTATS VALUES("+ id +", '" + name + "', '" + date + "', " + max_w + ", " + used + ", " + dist + ", " + avrpwr + ")");
-        db.execSQL("INSERT INTO TripSTATS (name, date, max_w, used, dist, avrpwr) VALUES('" + name + "', '" + date + "', " + max_w + ", " + used + ", " + dist + ", " + avrpwr + ")");
-        db.close();
+        db.execSQL("UPDATE TripSTATS SET date = '" + date + "', max_w = " + max_w + ", used = " + used + ", dist = " + dist + ", avrpwr = " + avrpwr +" WHERE tripId = "+ tripId );
+        if (db != null && db.isOpen()) db.close();
     }
 
-//    // Table 데이터 수정
-//    public void Update(String table, String name, int age, String Addr) {
-//        SQLiteDatabase db = getWritableDatabase();
-//        db.execSQL("UPDATE "+ table +" SET age = " + age + ", ADDR = '" + Addr + "'" + " WHERE NAME = '" + name + "'");
-//        db.close();
-//    }
+    public int init_TripSTATS() {
+        SQLiteDatabase db = getWritableDatabase();
+        //db.execSQL("INSERT INTO TripSTATS VALUES("+ id +", '" + name + "', '" + date + "', " + max_w + ", " + used + ", " + dist + ", " + avrpwr + ")");
+        db.execSQL("INSERT INTO TripSTATS (name) VALUES( 'Untitled' )");
+        int tripId = get_latestTripId();
+        if (db != null && db.isOpen()) db.close();
+        return tripId;
+    }
+
+    public int get_latestTripId() {
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.rawQuery("SELECT tripId FROM TripSTATS WHERE tripId =( SELECT MAX(tripId) FROM TripSTATS )", null);
+        if (cursor != null && cursor.moveToFirst()) {
+            int tripId = cursor.getInt(0);
+            cursor.close();
+            //if (db != null && db.isOpen()) db.close();
+            return tripId;
+        }
+        return -1;
+    }
+
+    // Table 데이터 수정
+    public void Update(String table, String name, int age, String Addr) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL("UPDATE "+ table +" SET age = " + age + ", ADDR = '" + Addr + "'" + " WHERE NAME = '" + name + "'");
+        if (db != null && db.isOpen()) db.close();
+    }
 
 //    // Table 데이터 삭제
 //    public void Delete(String table, String name) {
@@ -119,47 +118,61 @@ public class DBHelper extends SQLiteOpenHelper {
 //        db.close();
 //    }
 
-    public void deleteTrip(int tripId) {
-        //tripId == tableId, 1부터 시작
+    public void deleteTrip() {
         SQLiteDatabase db = getWritableDatabase();
-        Cursor cursor = db.rawQuery("SELECT logLastId FROM TripLogTable WHERE tableId = " + tripId, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            int logLastId = cursor.getInt(0);
-            int logFirstId = 1;
-
-            if (tripId != 1) {
-                cursor = db.rawQuery("SELECT logLastId FROM TripLogTable WHERE tableId = " + (tripId - 1), null);
-                if (cursor != null && cursor.moveToFirst()) {
-                    logFirstId = cursor.getInt(0);
-                }
-            }
-
-            deleteTripLogTable(tripId);
-            deleteTripSTATS(tripId);
-            deleteTripLog(logFirstId, logLastId);
-        }
-
-        cursor.close();
-        db.close();
+        db.execSQL("DELETE FROM TripLog WHERE tripId <= (SELECT MAX(tripId) -4 FROM tripSTATS )");
+        db.execSQL("DELETE FROM TripSTATS WHERE tripId <= (SELECT MAX(tripId) -4 FROM tripSTATS ) ");
+        if (db != null && db.isOpen()) db.close();
     }
 
-    public void deleteTripLogTable(int tableId) {
+    public void deleteAllTrip() {
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("DELETE FROM TripLogTable WHERE tableId = " + tableId);
-        db.close();
+        db.execSQL("DELETE FROM TripLog");
+        db.execSQL("DELETE FROM TripSTATS");
+        if (db != null && db.isOpen()) db.close();
     }
 
-    public void deleteTripSTATS(int tripId) {
-        SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("DELETE FROM TripSTATS WHERE tripId = " + tripId);
-        db.close();
-    }
-
-    public void deleteTripLog(int firstLogId, int lastLogId) {
-        SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("DELETE FROM TripLog WHERE logId > " + firstLogId + " AND logId <= " + lastLogId);
-        db.close();
-    }
+//    public void deleteTrip(int tripId) {
+//        //tripId == tableId, 1부터 시작
+//        SQLiteDatabase db = getWritableDatabase();
+//        Cursor cursor = db.rawQuery("SELECT logLastId FROM TripLogTable WHERE tableId = " + tripId, null);
+//        if (cursor != null && cursor.moveToFirst()) {
+//            int logLastId = cursor.getInt(0);
+//            int logFirstId = 1;
+//
+//            if (tripId != 1) {
+//                cursor = db.rawQuery("SELECT logLastId FROM TripLogTable WHERE tableId = " + (tripId - 1), null);
+//                if (cursor != null && cursor.moveToFirst()) {
+//                    logFirstId = cursor.getInt(0);
+//                }
+//            }
+//
+//            deleteTripLogTable(tripId);
+//            deleteTripSTATS(tripId);
+//            deleteTripLog(logFirstId, logLastId);
+//        }
+//
+//        cursor.close();
+//        db.close();
+//    }
+//
+//    public void deleteTripLogTable(int tableId) {
+//        SQLiteDatabase db = getWritableDatabase();
+//        db.execSQL("DELETE FROM TripLogTable WHERE tableId = " + tableId);
+//        db.close();
+//    }
+//
+//    public void deleteTripSTATS(int tripId) {
+//        SQLiteDatabase db = getWritableDatabase();
+//        db.execSQL("DELETE FROM TripSTATS WHERE tripId = " + tripId);
+//        db.close();
+//    }
+//
+//    public void deleteTripLog(int firstLogId, int lastLogId) {
+//        SQLiteDatabase db = getWritableDatabase();
+//        db.execSQL("DELETE FROM TripLog WHERE logId > " + firstLogId + " AND logId <= " + lastLogId);
+//        db.close();
+//    }
 
 
 
@@ -171,107 +184,108 @@ public class DBHelper extends SQLiteOpenHelper {
         // DB에 있는 데이터를 쉽게 처리하기 위해 Cursor를 사용하여 테이블에 있는 모든 데이터 출력
         Cursor cursor = db.rawQuery("SELECT * FROM TripLog", null);
         while (cursor.moveToNext()) {
-            result += "id : " + cursor.getInt(0)
-                    + ", time : " + cursor.getString(1)
-                    + ", volt : " + cursor.getInt(2)
-                    + ", amp : " + cursor.getInt(3)
-                    + ", w : " + cursor.getInt(4)
+            result += "logId : " + cursor.getInt(0)
+                    + ", tripId : " + cursor.getInt(1)
+                    + ", time : " + cursor.getString(2)
+                    + ", volt : " + cursor.getInt(3)
+                    + ", amp : " + cursor.getInt(4)
+                    + ", w : " + cursor.getInt(5)
                     + "\n";
         }
         cursor.close();
-        db.close();
+        if (db != null && db.isOpen()) db.close();
         return result;
     }
 
     public long getProfileCount(String TABLE_NAME) {
         SQLiteDatabase db = this.getReadableDatabase();
         long count = DatabaseUtils.queryNumEntries(db, TABLE_NAME);
-        db.close();
+        if (db != null && db.isOpen()) db.close();
         return count;
     }
 
-    public int getTripLogTableLastId() {
-        if (getProfileCount("TripLogTable") <= 0) {
-            return 0;
-        }
-
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM TripLogTableLastId ORDER BY rowid DESC LIMIT 1", null);
-        if (cursor != null && cursor.moveToFirst()) {
-            int lastId = cursor.getInt(1);
-            if (lastId != -1) {  // DEFAULT 값인 1이 아니면 = 값이 들어있으면
-                cursor.close();
-                db.close();
-                return lastId;
-            }
-
-            lastId = -999;
-
-            cursor.close();
-            db.close();
-
-            return lastId;
-        }
-
-        cursor.close();
-        return -888;
-
-    }
-
-    public int getTripLogLastId() {
-        if (getProfileCount("TripLog") <= 0) {
-            return 0;
-        }
-
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM TripLogLastId ORDER BY rowid DESC LIMIT 1", null);
-        if (cursor != null && cursor.moveToFirst()) {  // DEFAULT 값인 1이 아니면 = 값이 들어있으면
-            int lastId = cursor.getInt(1);   //the latest column
-            if (lastId != -1) {
-                cursor.close();
-                db.close();
-                return lastId;
-            }
-
-            lastId = -999;
-
-            cursor.close();
-            db.close();
-
-            return lastId;
-        }
-
-        cursor.close();
-        return -888;
-
-    }
-
-    public int getTripSTATSLastId() {
-        if (getProfileCount("TripSTATS") <= 0) {
-            return 0;
-        }
-
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM TripSTATSLastId ORDER BY rowid DESC LIMIT 1", null);
-        if (cursor != null && cursor.moveToFirst()) {  // DEFAULT 값인 1이 아니면 = 값이 들어있으면
-            int lastId = cursor.getInt(1);
-            if (lastId != -1) {
-                cursor.close();
-                db.close();
-                return lastId;
-            }
-
-            lastId = -999;
-
-            cursor.close();
-            db.close();
-
-            return lastId;
-        }
-
-        cursor.close();
-        return -888;
-    }
+//    public int getTripLogTableLastId() {
+//        if (getProfileCount("TripLogTable") <= 0) {
+//            return 0;
+//        }
+//
+//        SQLiteDatabase db = this.getReadableDatabase();
+//        Cursor cursor = db.rawQuery("SELECT * FROM TripLogTableLastId ORDER BY rowid DESC LIMIT 1", null);
+//        if (cursor != null && cursor.moveToFirst()) {
+//            int lastId = cursor.getInt(1);
+//            if (lastId != -1) {  // DEFAULT 값인 1이 아니면 = 값이 들어있으면
+//                cursor.close();
+//                db.close();
+//                return lastId;
+//            }
+//
+//            lastId = -999;
+//
+//            cursor.close();
+//            db.close();
+//
+//            return lastId;
+//        }
+//
+//        cursor.close();
+//        return -888;
+//
+//    }
+//
+//    public int getTripLogLastId() {
+//        if (getProfileCount("TripLog") <= 0) {
+//            return 0;
+//        }
+//
+//        SQLiteDatabase db = this.getReadableDatabase();
+//        Cursor cursor = db.rawQuery("SELECT * FROM TripLogLastId ORDER BY rowid DESC LIMIT 1", null);
+//        if (cursor != null && cursor.moveToFirst()) {  // DEFAULT 값인 1이 아니면 = 값이 들어있으면
+//            int lastId = cursor.getInt(1);   //the latest column
+//            if (lastId != -1) {
+//                cursor.close();
+//                db.close();
+//                return lastId;
+//            }
+//
+//            lastId = -999;
+//
+//            cursor.close();
+//            db.close();
+//
+//            return lastId;
+//        }
+//
+//        cursor.close();
+//        return -888;
+//
+//    }
+//
+//    public int getTripSTATSLastId() {
+//        if (getProfileCount("TripSTATS") <= 0) {
+//            return 0;
+//        }
+//
+//        SQLiteDatabase db = this.getReadableDatabase();
+//        Cursor cursor = db.rawQuery("SELECT * FROM TripSTATSLastId ORDER BY rowid DESC LIMIT 1", null);
+//        if (cursor != null && cursor.moveToFirst()) {  // DEFAULT 값인 1이 아니면 = 값이 들어있으면
+//            int lastId = cursor.getInt(1);
+//            if (lastId != -1) {
+//                cursor.close();
+//                db.close();
+//                return lastId;
+//            }
+//
+//            lastId = -999;
+//
+//            cursor.close();
+//            db.close();
+//
+//            return lastId;
+//        }
+//
+//        cursor.close();
+//        return -888;
+//    }
 
 //    public int getTablesCount(String TABLE_NAME) {
 //        if (getProfileCount(TABLE_NAME) <= 0) {
@@ -334,8 +348,8 @@ public class DBHelper extends SQLiteOpenHelper {
 //        return cursor.getInt(0);
 //    }
 
-    public int getUsedW(int tableId) {
-        Map map = getTripLog(tableId);
+    public int getUsedW(int tripId) {
+        Map map = getTripLog(tripId);
         ArrayList<Integer> wList = (ArrayList<Integer>) map.get("W");
         int first = wList.get(0);
         int last = wList.get(wList.size() - 1);
@@ -346,8 +360,8 @@ public class DBHelper extends SQLiteOpenHelper {
         return usedW;
     }
 
-    public int getAvgPwrW(int tableId) {
-        Map map = getTripLog(tableId);
+    public int getAvgPwrW(int tripId) {
+        Map map = getTripLog(tripId);
         ArrayList<Integer> wList = (ArrayList<Integer>) map.get("W");
         int sum = 0;
 
@@ -376,7 +390,7 @@ public class DBHelper extends SQLiteOpenHelper {
         }
 
         cursor.close();
-        db.close();
+        if (db != null && db.isOpen()) db.close();
         return result;
     }
 
@@ -395,7 +409,7 @@ public class DBHelper extends SQLiteOpenHelper {
             map.put("AVRPWR", cursor.getInt(6));
 
             cursor.close();
-            db.close();
+            if (db != null && db.isOpen()) db.close();
         }
         else {
             map.put("ID", -1);
@@ -413,70 +427,30 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
         //UPDATE 테이블명 SET 컬럼명1=값1, 컬럼명2=값2 WHERE 조건식
         db.execSQL("UPDATE TripSTATS SET name = '" + tripName + "' WHERE tripId = " + tripId);
-        db.close();
+        if (db != null && db.isOpen()) db.close();
     }
 
-    public Map getTripLogW(Map map, int tableId) {
+    public Map getTripLogW(Map map, int tripId) {
         //TODO: 실시간 그래프 그리기
-        if (tableId == -1) {  // Now -ing (Current)
-            SQLiteDatabase db = getReadableDatabase();
-            ArrayList<Integer> list = new ArrayList<>();
-
-            int logFirstId = 0;
-
-            Cursor cursor = db.rawQuery("SELECT logLastId FROM TripLogTable ORDER BY tableId DESC LIMIT 1", null);
-            if (cursor != null && cursor.moveToFirst()) {
-                logFirstId = cursor.getInt(0);
-            }
-
-            cursor = db.rawQuery("SELECT w FROM TripLog WHERE logId > " + logFirstId, null);
-            while (cursor.moveToNext()) {
-                list.add(cursor.getInt(0));
-            }
-
-            System.out.println("w list : " + list);
-            map.put("W", list);
-            cursor.close();
-            db.close();
-            return map;
+        if (tripId == -1) {  // Now -ing (Current)
+            tripId = get_latestTripId();
         }
-
-        int tripLogTableLastId = getTripLogTableLastId();
-        if (tableId > tripLogTableLastId) {
-            //TODO: 이 부분 정교하게 !! 보완
-            return map;
-        }
-
         // 읽기가 가능하게 DB 열기
         SQLiteDatabase db = getReadableDatabase();
         ArrayList<Integer> list = new ArrayList<>();
 
-        Cursor cursor = db.rawQuery("SELECT logLastId FROM TripLogTable WHERE tableId = " + tableId, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            int logLastId = cursor.getInt(0);
-
-
-            int logFirstId = 0;
-            if (tableId != 0) {
-                cursor = db.rawQuery("SELECT logLastId FROM TripLogTable WHERE tableId = " + (tableId - 1), null);
-                if (cursor != null && cursor.moveToFirst()) {
-                    logFirstId = cursor.getInt(0);
-                }
-            }
-
-            cursor = db.rawQuery("SELECT w FROM TripLog WHERE logId <= " + logLastId + " AND logId > " + logFirstId, null);
-            while (cursor.moveToNext()) {
-                list.add(cursor.getInt(0));
-            }
-            map.put("W", list);
+        Cursor cursor = db.rawQuery("SELECT w FROM TripLog WHERE tripId = " + tripId, null);
+        while (cursor.moveToNext()) {
+            list.add(cursor.getInt(0));
         }
+        map.put("W", list);
 
         cursor.close();
-        db.close();
+        if (db != null && db.isOpen()) db.close();
         return map;
     }
 
-    public Map getTripLog(int tableId) {
+    public Map getTripLog(int tripId) {
 
         Map map = new HashMap();
 
@@ -487,58 +461,30 @@ public class DBHelper extends SQLiteOpenHelper {
         ArrayList<Integer> list3 = new ArrayList<>();
         ArrayList<Integer> list4 = new ArrayList<>();
 
-        Cursor cursor = db.rawQuery("SELECT logLastId FROM TripLogTable WHERE tableId = " + tableId, null);
-        int logLastId, logFirstId;
-        if (cursor != null && cursor.moveToFirst()) {
-            logLastId = cursor.getInt(0);
-
-            logFirstId = 0;
-            if (tableId != 0) {
-                cursor = db.rawQuery("SELECT logLastId FROM TripLogTable WHERE tableId = " + (tableId - 1), null);
-                if (cursor != null && cursor.moveToFirst()) {
-                    logFirstId = cursor.getInt(0);
-                }
-            }
-
-            // 1 : time
-            // 2 : volt
-            // 3 : amp
-            // 4 : W
-            cursor = db.rawQuery("SELECT * FROM TripLog WHERE logId <= " + logLastId + " AND logId > " + logFirstId, null);
-            while (cursor.moveToNext()) {
-                list1.add(cursor.getString(1));
-                list2.add(cursor.getInt(2));
-                list3.add(cursor.getInt(3));
-                list4.add(cursor.getInt(4));
-            }
-            map.put("TIME", list1);
-            map.put("VOLT", list2);
-            map.put("AMP", list3);
-            map.put("W", list4);
-
-            cursor.close();
-            db.close();
-            return map;
-
-        } else {
-            list1.add("null");
-            list2.add(-1);
-            list3.add(-1);
-            list4.add(-1);
-
-            map.put("TIME", list1);
-            map.put("VOLT", list2);
-            map.put("AMP", list3);
-            map.put("W", list4);
-
-            cursor.close();
-            return map;
+        // 1 : time
+        // 2 : volt
+        // 3 : amp
+        // 4 : W
+        Cursor cursor = db.rawQuery("SELECT * FROM TripLog WHERE tripId = " + tripId, null);
+        while (cursor.moveToNext()) {
+            list1.add(cursor.getString(2));
+            list2.add(cursor.getInt(3));
+            list3.add(cursor.getInt(4));
+            list4.add(cursor.getInt(5));
         }
+        map.put("TIME", list1);
+        map.put("VOLT", list2);
+        map.put("AMP", list3);
+        map.put("W", list4);
+
+        cursor.close();
+        if (db != null && db.isOpen()) db.close();
+        return map;
     }
 
-    public int getMaxW(int tableId) {
-        if (tableId >= 1) {
-            Map map = getTripLog(tableId);
+    public int getMaxW(int tripId) {
+        if (tripId >= 1) {
+            Map map = getTripLog(tripId);
             ArrayList<Integer> wList = (ArrayList<Integer>) map.get("W");
             int max = wList.get(0);
             for (int i = 0; i < wList.size(); i++) {
@@ -559,30 +505,11 @@ public class DBHelper extends SQLiteOpenHelper {
         // DB에 있는 데이터를 쉽게 처리하기 위해 Cursor를 사용하여 테이블에 있는 모든 데이터 출력
         Cursor cursor = db.rawQuery("SELECT * FROM TripLog", null);
         while (cursor.moveToNext()) {
-            list.add(cursor.getInt(1));
+            list.add(cursor.getInt(2));
         }
         map.put("TIME", list);
-        db.close();
+        if (db != null && db.isOpen()) db.close();
         cursor.close();
         return map;
-    }
-
-    // TripLogTable Table 조회
-    public String getTripLogTable() {
-        // 읽기가 가능하게 DB 열기
-        SQLiteDatabase db = getReadableDatabase();
-        String result = "";
-
-        // DB에 있는 데이터를 쉽게 처리하기 위해 Cursor를 사용하여 테이블에 있는 모든 데이터 출력
-        Cursor cursor = db.rawQuery("SELECT * FROM TripLogTable", null);
-        while (cursor.moveToNext()) {
-            result += "#TripLogId : " + cursor.getInt(0)
-                    + " lastLogId : " + cursor.getInt(1)
-                    + "\n";
-        }
-
-        cursor.close();
-        db.close();
-        return result;
     }
 }

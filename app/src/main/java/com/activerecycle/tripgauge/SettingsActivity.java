@@ -53,20 +53,7 @@ public class SettingsActivity extends AppCompatActivity {
         btn_reset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                long initcount = dbHelper.getProfileCount("TripLogTable");
-                int id = 1;
-                while (true) {
-                    dbHelper.deleteTrip(id);
-
-                    dbHelper.insertTripLogLastId();
-                    dbHelper.insertTripLogTableLastId();
-                    dbHelper.insertTripSTATSLastId();
-
-                    long count = dbHelper.getProfileCount("TripLogTable");
-
-                    if (count == 0) { break; }
-                    id++;
-                }
+                dbHelper.deleteAllTrip();
                 Toast.makeText(SettingsActivity.this, "모든 트립을 삭제했습니다.", Toast.LENGTH_SHORT).show();
             }
         });

@@ -60,6 +60,7 @@ public class ConsumptionActivity extends AppCompatActivity {
     // DBHelper
     DBHelper dbHelper;
     String tripName;
+    int tripId;
 
     static Map dataMap = new HashMap();
 
@@ -200,6 +201,7 @@ public class ConsumptionActivity extends AppCompatActivity {
 
 
         endOfTrip = 0;
+        tripId = dbHelper.init_TripSTATS();
         // 5초마다 실행
         thread = new Thread(new Runnable() {
             @Override
@@ -220,15 +222,9 @@ public class ConsumptionActivity extends AppCompatActivity {
                     tv_w.setText(volt * amp + "W");
                     tv_w.invalidate();
 
-                    int tripLogId = dbHelper.getTripLogLastId() + 1;
-
-                    //dbHelper.printTablesCounts();
-
-                    dbHelper.insert_TripLog(tripLogId, nowTime, volt, amp);
-//                    String allLog = dbHelper.getLog();
-//                    System.out.println(allLog);
-                    dbHelper.insertTripLogLastId();
-
+                    dbHelper.insert_TripLog(nowTime, volt, amp);
+                    String allLog = dbHelper.getLog();
+                    System.out.println(allLog);
 
                     tripLogActivity.showCurrentTrip(dbHelper);
 
@@ -246,7 +242,7 @@ public class ConsumptionActivity extends AppCompatActivity {
                             @Override
                             public void run() {
                                 //showSaveTripDialog(tripLogId, nowTime);
-                                saveTrip(tripLogId, nowTime);
+                                saveTrip(tripId, nowTime);
                             }
                         }, 0);
 
@@ -263,7 +259,7 @@ public class ConsumptionActivity extends AppCompatActivity {
         
     }
 
-    private void showSaveTripDialog(int tripLogId, String nowTime) {
+    private void showSaveTripDialog(String nowTime) {
         View dialogView = (View) View.inflate(
                 ConsumptionActivity.this, R.layout.dialog_savetrip, null);
         AlertDialog.Builder dig = new AlertDialog.Builder(ConsumptionActivity.this, R.style.Theme_Dialog);
@@ -292,7 +288,7 @@ public class ConsumptionActivity extends AppCompatActivity {
 
                 tripName = String.valueOf(editText.getText());
 
-                saveTrip(tripLogId, nowTime);
+                saveTrip(tripId, nowTime);
 
             }
         });
@@ -302,21 +298,11 @@ public class ConsumptionActivity extends AppCompatActivity {
     }
 
 
-    private void saveTrip(int tripLogId, String nowTime) {
-        // 트립 저장
-        int tripLogTableId = dbHelper.getTripLogTableLastId() + 1;
+    private void saveTrip(int tripId, String nowTime) {
 
-        dbHelper.insert_TripLogTable(tripLogTableId, tripLogId);
-        dbHelper.insertTripLogTableLastId();
-
-        String allTripLogTable = dbHelper.getTripLogTable();
-        System.out.println(allTripLogTable);
-
-        int tripSTATSId = dbHelper.getTripSTATSLastId() + 1;
-
+        //TODO: insert가 아니라 Update !!
         if (tripName == null) { tripName = "Untitled"; }
-        dbHelper.insert_TripSTATS(tripSTATSId, tripName, nowTime, dbHelper.getMaxW(tripSTATSId), dbHelper.getUsedW(tripSTATSId), 2150, dbHelper.getAvgPwrW(tripSTATSId));
-        dbHelper.insertTripSTATSLastId();
+        dbHelper.update_TripSTATS(tripId, nowTime, dbHelper.getMaxW(tripId), dbHelper.getUsedW(tripId), 2150, dbHelper.getAvgPwrW(tripId));
 
         Toast.makeText(getApplicationContext(), "트립이 저장되었습니다.", Toast.LENGTH_SHORT).show();
 
@@ -325,19 +311,8 @@ public class ConsumptionActivity extends AppCompatActivity {
 
 
         // Trip 기록 개수 20개 넘으면 자동 삭제
-        if (tripLogTableId + 1 > 20) {
-            long count;
-            for (int id = 1; id < tripLogTableId; id++) {
-
-                dbHelper.deleteTrip(id);
-                count = dbHelper.getProfileCount("TripLogTable");
-
-                dbHelper.insertTripLogLastId();
-                dbHelper.insertTripLogTableLastId();
-                dbHelper.insertTripSTATSLastId();
-
-                if (count < 20) { break; }
-            }
+        if (tripId + 1 > 4) {
+            dbHelper.deleteTrip();
         }
     }
 }
