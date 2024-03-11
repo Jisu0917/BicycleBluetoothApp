@@ -120,8 +120,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public void deleteTrip() {
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("DELETE FROM TripLog WHERE tripId <= (SELECT MAX(tripId) -4 FROM tripSTATS )");
-        db.execSQL("DELETE FROM TripSTATS WHERE tripId <= (SELECT MAX(tripId) -4 FROM tripSTATS ) ");
+        db.execSQL("DELETE FROM TripLog WHERE tripId <= (SELECT MAX(tripId) -20 FROM tripSTATS )");
+        db.execSQL("DELETE FROM TripSTATS WHERE tripId <= (SELECT MAX(tripId) -20 FROM tripSTATS ) ");
         if (db != null && db.isOpen()) db.close();
     }
 

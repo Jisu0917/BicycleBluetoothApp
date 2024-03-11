@@ -311,7 +311,7 @@ public class ConsumptionActivity extends AppCompatActivity {
 
 
         // Trip 기록 개수 20개 넘으면 자동 삭제
-        if (tripId + 1 > 4) {
+        if (tripId + 1 > 20) {
             dbHelper.deleteTrip();
         }
     }
