@@ -46,6 +46,8 @@ public class ConsumptionActivity extends AppCompatActivity {
     double previousLat = 0.0; // 이전 위도
     double previousLon = 0.0; // 이전 경도
     double totalDistance = 0.0; // 총 이동 거리
+    double tripADistance = 0.0;
+    double tripBDistance = 0.0;
     double bef_lat, bef_long;
     boolean btconnect = true;
 
@@ -136,16 +138,24 @@ public class ConsumptionActivity extends AppCompatActivity {
                 if (previousLat != 0.0 && previousLon != 0.0) {
                     double distance = GpsUtils.calculateDistance(previousLat, previousLon, currentLat, currentLon);
                     totalDistance += distance;
+                    tripADistance += distance;
+                    tripBDistance += distance;
                 }
 
                 // 현재 위치를 이전 위치로 설정
                 previousLat = currentLat;
                 previousLon = currentLon;
 
-                // 총 이동 거리 출력 및 화면에 반영
-                System.out.println("총 이동 거리: " + totalDistance + " km");
-                tv_distance.setText(String.format("%.2f", totalDistance) + " Km");
+                // 총 이동 거리 화면에 반영
+                if (tv_odo.getText().equals("ODO")) {
+                    tv_distance.setText(String.format("%.2f", totalDistance) + " Km");
+                } else if (tv_odo.getText().equals("TRIPA")) {
+                    tv_distance.setText(String.format("%.2f", tripADistance) + " Km");
+                } else if (tv_odo.getText().equals("TRIPB")) {
+                    tv_distance.setText(String.format("%.2f", tripBDistance) + " Km");
+                }
 
+                // 주행 속도
                 speed = (int) location.getSpeed();
 
                 // 주행 속도 화면에 반영
@@ -205,6 +215,24 @@ public class ConsumptionActivity extends AppCompatActivity {
                 } else if (tv_odo.getText().equals("TRIPB")) {
                     tv_odo.setText("ODO");
                 }
+            }
+        });
+
+        tv_odo.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                if (tv_odo.getText().equals("ODO")) {
+                    totalDistance = 0.0;
+                    Toast.makeText(ConsumptionActivity.this, "ODO를 초기화 합니다.", Toast.LENGTH_SHORT).show();
+                } else if (tv_odo.getText().equals("TRIPA")) {
+                    tripADistance = 0.0;
+                    Toast.makeText(ConsumptionActivity.this, "TRIP A를 초기화 합니다.", Toast.LENGTH_SHORT).show();
+                } else if (tv_odo.getText().equals("TRIPB")) {
+                    tripBDistance = 0.0;
+                    Toast.makeText(ConsumptionActivity.this, "TRIP B를 초기화 합니다.", Toast.LENGTH_SHORT).show();
+                }
+
+                return false;
             }
         });
 
