@@ -43,6 +43,10 @@ public class ConsumptionActivity extends AppCompatActivity {
 
     // 앱에서 디바이스에게 주는 데이터
     int speed = 0;
+    double previousLat = 0.0; // 이전 위도
+    double previousLon = 0.0; // 이전 경도
+    double totalDistance = 0.0; // 총 이동 거리
+    double bef_lat, bef_long;
     boolean btconnect = true;
 
     // 디바이스로부터 받는 데이터
@@ -125,8 +129,23 @@ public class ConsumptionActivity extends AppCompatActivity {
         final LocationListener gpsLocationListener = new LocationListener() {
             @Override
             public void onLocationChanged(@NonNull Location location) {
-                String provider = location.getProvider();  // 위치 정보
-                //System.out.println("위치 정보 : " + provider + ", 속도 : " + location.getSpeed());
+                double currentLat = location.getLatitude(); // 현재 위도
+                double currentLon = location.getLongitude(); // 현재 경도
+
+                // 이전 위치가 있을 때만 거리를 계산하고, 이동 거리를 누적
+                if (previousLat != 0.0 && previousLon != 0.0) {
+                    double distance = GpsUtils.calculateDistance(previousLat, previousLon, currentLat, currentLon);
+                    totalDistance += distance;
+                }
+
+                // 현재 위치를 이전 위치로 설정
+                previousLat = currentLat;
+                previousLon = currentLon;
+
+                // 총 이동 거리 출력 및 화면에 반영
+                System.out.println("총 이동 거리: " + totalDistance + " km");
+                tv_distance.setText(String.format("%.2f", totalDistance) + " Km");
+
                 speed = (int) location.getSpeed();
 
                 // 주행 속도 화면에 반영
@@ -258,6 +277,7 @@ public class ConsumptionActivity extends AppCompatActivity {
         thread.start();
         
     }
+
 
     private void showSaveTripDialog(String nowTime) {
         View dialogView = (View) View.inflate(
